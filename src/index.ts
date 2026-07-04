@@ -1,13 +1,18 @@
 import { serve } from '@hono/node-server'
 import { Hono } from 'hono'
 import { buildKit } from './engine.js'
+import { validateModel } from './model/integrity.js'
 import { parseWizardAnswers } from './validate.js'
+
+// Content typos fail the deploy, not the user's request. Railway keeps the
+// previous release serving if the new one refuses to boot.
+validateModel()
 
 const app = new Hono()
 
 app.get('/', (c) => c.text('phew — the right kit for your trip 🩹 (deployed by git push)'))
 
-app.get('/health', (c) => c.json({ status: 'ok', version: '0.0.3' }))
+app.get('/health', (c) => c.json({ status: 'ok', version: '0.0.4' }))
 
 // The engine over HTTP: wizard answers in, kit out. Deterministic and
 // stateless — no database until lists become shareable.

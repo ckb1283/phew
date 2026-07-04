@@ -10,43 +10,43 @@
 // Quantity ladders are calibrated against the mock fixture: 2 people × 5 days
 // (10 person-days) must reproduce design/mocks/03-results.html quantities.
 
-import type { BagRule, FlagRule, KitRule, NudgeRule } from './types.js'
+import type { BagRule, Category, FlagRule, KitRule, NudgeRule, SectionMeta } from './types.js'
 
 export const KIT_RULES: KitRule[] = [
   // --- CORE: wound closure / dressing / cleaning (taxonomy §1–3) ---
-  { itemId: 'adhesive-bandages', trigger: { kind: 'core' }, qty: { kind: 'ladder', steps: [[3, 5], [10, 8], [20, 12], [Infinity, 16]] } },
-  { itemId: 'knuckle-bandages', trigger: { kind: 'core' }, qty: { kind: 'ladder', steps: [[3, 2], [10, 4], [Infinity, 6]] }, cuttable: true },
-  { itemId: 'closure-strips', trigger: { kind: 'core' }, qty: { kind: 'ladder', steps: [[3, 3], [10, 6], [Infinity, 10]] } },
-  { itemId: 'gauze-pads', trigger: { kind: 'core' }, qty: { kind: 'ladder', steps: [[3, 2], [10, 4], [Infinity, 8]] } },
-  { itemId: 'non-adherent-dressings', trigger: { kind: 'core' }, qty: { kind: 'ladder', steps: [[10, 2], [Infinity, 4]] }, cuttable: true },
-  { itemId: 'conforming-gauze', trigger: { kind: 'core' }, qty: { kind: 'ladder', steps: [[10, 1], [Infinity, 2]] } },
-  { itemId: 'antiseptic-wipes', trigger: { kind: 'core' }, qty: { kind: 'ladder', steps: [[3, 4], [10, 6], [Infinity, 10]] } },
-  { itemId: 'antibiotic-ointment', trigger: { kind: 'core' }, qty: { kind: 'ladder', steps: [[3, 2], [10, 4], [Infinity, 6]] } },
+  { itemId: 'adhesive-bandages', trigger: { kind: 'core' }, qty: { kind: 'ladder', steps: [{ upToPersonDays: 3, qty: 5 }, { upToPersonDays: 10, qty: 8 }, { upToPersonDays: 20, qty: 12 }, { qty: 16 }] } },
+  { itemId: 'knuckle-bandages', trigger: { kind: 'core' }, qty: { kind: 'ladder', steps: [{ upToPersonDays: 3, qty: 2 }, { upToPersonDays: 10, qty: 4 }, { qty: 6 }] }, cuttable: true },
+  { itemId: 'closure-strips', trigger: { kind: 'core' }, qty: { kind: 'ladder', steps: [{ upToPersonDays: 3, qty: 3 }, { upToPersonDays: 10, qty: 6 }, { qty: 10 }] } },
+  { itemId: 'gauze-pads', trigger: { kind: 'core' }, qty: { kind: 'ladder', steps: [{ upToPersonDays: 3, qty: 2 }, { upToPersonDays: 10, qty: 4 }, { qty: 8 }] } },
+  { itemId: 'non-adherent-dressings', trigger: { kind: 'core' }, qty: { kind: 'ladder', steps: [{ upToPersonDays: 10, qty: 2 }, { qty: 4 }] }, cuttable: true },
+  { itemId: 'conforming-gauze', trigger: { kind: 'core' }, qty: { kind: 'ladder', steps: [{ upToPersonDays: 10, qty: 1 }, { qty: 2 }] } },
+  { itemId: 'antiseptic-wipes', trigger: { kind: 'core' }, qty: { kind: 'ladder', steps: [{ upToPersonDays: 3, qty: 4 }, { upToPersonDays: 10, qty: 6 }, { qty: 10 }] } },
+  { itemId: 'antibiotic-ointment', trigger: { kind: 'core' }, qty: { kind: 'ladder', steps: [{ upToPersonDays: 3, qty: 2 }, { upToPersonDays: 10, qty: 4 }, { qty: 6 }] } },
   { itemId: 'elastic-bandage', trigger: { kind: 'core' }, qty: { kind: 'fixed', n: 1 } },
   // Irrigation unlocks at multi-day (T1 tier: the key field wound intervention)
   { itemId: 'irrigation-syringe', trigger: { kind: 'duration', minDays: 2 }, qty: { kind: 'fixed', n: 1 } },
   // Burn care is CORE for overnight trips — everyone cooks on flame (notes.md it.3)
-  { itemId: 'burn-gel', trigger: { kind: 'duration', minDays: 2 }, qty: { kind: 'ladder', steps: [[10, 3], [Infinity, 4]] } },
+  { itemId: 'burn-gel', trigger: { kind: 'duration', minDays: 2 }, qty: { kind: 'ladder', steps: [{ upToPersonDays: 10, qty: 3 }, { qty: 4 }] } },
 
   // --- Blister module: attaches to foot- and saddle-powered activities (taxonomy §4) ---
-  { itemId: 'leukotape', trigger: { kind: 'activity', activity: 'backpacking' }, qty: { kind: 'ladder', steps: [[10, 10], [Infinity, 14]] } },
-  { itemId: 'leukotape', trigger: { kind: 'activity', activity: 'cycling' }, qty: { kind: 'ladder', steps: [[10, 6], [Infinity, 10]] } },
+  { itemId: 'leukotape', trigger: { kind: 'activity', activity: 'backpacking' }, qty: { kind: 'ladder', steps: [{ upToPersonDays: 10, qty: 10 }, { qty: 14 }] } },
+  { itemId: 'leukotape', trigger: { kind: 'activity', activity: 'cycling' }, qty: { kind: 'ladder', steps: [{ upToPersonDays: 10, qty: 6 }, { qty: 10 }] } },
   { itemId: 'hydrogel-dressings', trigger: { kind: 'activity', activity: 'backpacking' }, qty: { kind: 'fixed', n: 2 }, cuttable: true },
   { itemId: 'hydrogel-dressings', trigger: { kind: 'activity', activity: 'cycling' }, qty: { kind: 'fixed', n: 2 }, cuttable: true },
   // Road rash is the cycling signature injury
-  { itemId: 'film-dressings-large', trigger: { kind: 'activity', activity: 'cycling' }, qty: { kind: 'ladder', steps: [[10, 4], [Infinity, 6]] } },
+  { itemId: 'film-dressings-large', trigger: { kind: 'activity', activity: 'cycling' }, qty: { kind: 'ladder', steps: [{ upToPersonDays: 10, qty: 4 }, { qty: 6 }] } },
 
   // --- Medications: breadth scales with days (taxonomy §7 ladder) ---
-  { itemId: 'ibuprofen', trigger: { kind: 'core' }, qty: { kind: 'ladder', steps: [[2, 4], [6, 8], [12, 12], [Infinity, 16]] } },
-  { itemId: 'diphenhydramine', trigger: { kind: 'core' }, qty: { kind: 'ladder', steps: [[3, 4], [10, 6], [Infinity, 8]] } },
-  { itemId: 'acetaminophen', trigger: { kind: 'duration', minDays: 2 }, qty: { kind: 'ladder', steps: [[6, 6], [12, 8], [Infinity, 12]] }, cuttable: true },
+  { itemId: 'ibuprofen', trigger: { kind: 'core' }, qty: { kind: 'ladder', steps: [{ upToPersonDays: 2, qty: 4 }, { upToPersonDays: 6, qty: 8 }, { upToPersonDays: 12, qty: 12 }, { qty: 16 }] } },
+  { itemId: 'diphenhydramine', trigger: { kind: 'core' }, qty: { kind: 'ladder', steps: [{ upToPersonDays: 3, qty: 4 }, { upToPersonDays: 10, qty: 6 }, { qty: 8 }] } },
+  { itemId: 'acetaminophen', trigger: { kind: 'duration', minDays: 2 }, qty: { kind: 'ladder', steps: [{ upToPersonDays: 6, qty: 6 }, { upToPersonDays: 12, qty: 8 }, { qty: 12 }] }, cuttable: true },
   // Exactly the AMK/NOLS tier: loperamide enters at 4 days
-  { itemId: 'loperamide', trigger: { kind: 'duration', minDays: 4 }, qty: { kind: 'ladder', steps: [[12, 4], [Infinity, 6]] } },
+  { itemId: 'loperamide', trigger: { kind: 'duration', minDays: 4 }, qty: { kind: 'ladder', steps: [{ upToPersonDays: 12, qty: 4 }, { qty: 6 }] } },
   // Two rules, one item: aspirin enters at multi-day OR any cardiac-age party.
   // The engine merges duplicates — this is how OR is expressed.
   { itemId: 'aspirin', trigger: { kind: 'duration', minDays: 3 }, qty: { kind: 'fixed', n: 4 } },
   { itemId: 'aspirin', trigger: { kind: 'condition', condition: 'adults-60-plus' }, qty: { kind: 'fixed', n: 4 } },
-  { itemId: 'ors', trigger: { kind: 'environment', environment: 'hot-sun' }, qty: { kind: 'ladder', steps: [[10, 4], [Infinity, 6]] } },
+  { itemId: 'ors', trigger: { kind: 'environment', environment: 'hot-sun' }, qty: { kind: 'ladder', steps: [{ upToPersonDays: 10, qty: 4 }, { qty: 6 }] } },
   { itemId: 'aloe-packets', trigger: { kind: 'environment', environment: 'hot-sun' }, qty: { kind: 'fixed', n: 2 } },
   { itemId: 'meclizine', trigger: { kind: 'activity', activity: 'river' }, qty: { kind: 'fixed', n: 4 } },
   { itemId: 'hydrocortisone', trigger: { kind: 'environment', environment: 'poison-oak-ivy' }, qty: { kind: 'fixed', n: 4 } },
@@ -57,7 +57,7 @@ export const KIT_RULES: KitRule[] = [
   { itemId: 'nitrile-gloves', trigger: { kind: 'core' }, qty: { kind: 'fixed', n: 2 } },
   { itemId: 'safety-pins', trigger: { kind: 'core' }, qty: { kind: 'fixed', n: 3 }, cuttable: true },
   { itemId: 'trauma-shears', trigger: { kind: 'person-days', min: 4 }, qty: { kind: 'fixed', n: 1 }, cuttable: true },
-  { itemId: 'duct-tape', trigger: { kind: 'person-days', min: 4 }, qty: { kind: 'ladder', steps: [[6, 18], [Infinity, 26]] } },
+  { itemId: 'duct-tape', trigger: { kind: 'person-days', min: 4 }, qty: { kind: 'ladder', steps: [{ upToPersonDays: 6, qty: 18 }, { qty: 26 }] } },
   // Documentation enters above ~7 person-days (T2 universal; cheap)
   { itemId: 'accident-form', trigger: { kind: 'person-days', min: 7 }, qty: { kind: 'fixed', n: 1 } },
   { itemId: 'tick-tool', trigger: { kind: 'environment', environment: 'ticks-insects' }, qty: { kind: 'fixed', n: 1 } },
@@ -91,6 +91,13 @@ export const FLAG_RULES: FlagRule[] = [
     id: 'personal-rx', name: 'Personal prescriptions',
     why: 'Carry in original labeled packaging with 1–2 days extra supply.',
     trigger: { kind: 'core' },
+  },
+  {
+    // The daily-rx-meds wizard answer must visibly change the output
+    // (Kellock 2026-07-03); the core flag above stays for everyone
+    id: 'group-med-plan', name: 'Group medication plan',
+    why: 'Inventory daily meds, dosing schedules, and who carries what; split supplies between bags if the group may separate.',
+    trigger: { kind: 'condition', condition: 'daily-rx-meds' },
   },
   {
     id: 'abx-course', name: 'Antibiotic course for skin infections',
@@ -181,3 +188,28 @@ export const BAG_RULES: BagRule[] = [
     preselect: { ultralight: 'trunk-case', balanced: 'trunk-case', comprehensive: 'trunk-case' },
   },
 ]
+
+// --- Philosophy semantics — data, honoring the header contract that content
+// never lives in engine.ts. Ultralight's meaning is the `cuttable` flags above;
+// comprehensive scales ladder (consumable) quantities only.
+export const PHILOSOPHY = {
+  comprehensiveScale: 1.25,
+} as const
+
+// --- Sections: display metadata per category. Record<Category, …> means a new
+// category cannot compile without a section — items can never fire rules yet
+// render nowhere.
+export const SECTIONS: Record<Category, SectionMeta> = {
+  bandages: { title: 'Bandages & wound care', order: 1, note: null },
+  blister: { title: 'Blister & foot care', order: 2, note: null },
+  meds: { title: 'Medications', order: 3, note: 'all over-the-counter, unit-dose packets' },
+  tools: { title: 'Tools & instruments', order: 4, note: null },
+  trauma: {
+    title: 'Trauma layer', order: 5, note: null,
+    // Trauma is always offered (Kellock 2026-07-03); training gates the copy
+    noteByTraining: {
+      trained: 'requires training to use',
+      untrained: 'get trained before you carry this — see Before you go',
+    },
+  },
+}

@@ -2,8 +2,8 @@
 // No I/O, no randomness, no clock. All medical content lives in model/rules.ts
 // and model/catalog.ts; this file only evaluates it.
 
-import { CONTAINER_BY_ID, ITEM_BY_ID } from './model/catalog.js'
-import { BAG_RULES, FLAG_RULES, KIT_RULES, NUDGE_RULES } from './model/rules.js'
+import { CONTAINER_BY_ID, ITEM_BY_ID, ITEMS } from './model/catalog.js'
+import { BAG_RULES, FLAG_RULES, KIT_RULES, NUDGE_RULES, PHILOSOPHY, SECTIONS } from './model/rules.js'
 import {
   HOURS_TO_CARE,
   TRAINING_LEVELS,
@@ -11,9 +11,12 @@ import {
   type Category,
   type Condition,
   type Environment,
+  type Item,
   type Kit,
+  type KitChip,
   type KitItem,
   type KitRule,
+  type Philosophy,
   type Qty,
   type Trigger,
   type WizardAnswers,
@@ -66,15 +69,69 @@ function resolveQty(qty: Qty, a: WizardAnswers): { n: number; scalable: boolean 
       return { n: qty.n * a.people, scalable: false }
     case 'ladder': {
       const personDays = a.people * a.days
-      const step = qty.steps.find(([max]) => personDays <= max) ?? qty.steps[qty.steps.length - 1]
-      return { n: step[1], scalable: true }
+      // Integrity guarantees ascending steps with an open-ended terminal step,
+      // so the terminal step is the guaranteed fallback.
+      const step = qty.steps.find((s) => s.upToPersonDays !== undefined && personDays <= s.upToPersonDays)
+        ?? qty.steps[qty.steps.length - 1]
+      return { n: step.qty, scalable: true }
     }
   }
 }
 
+// --- Rule resolution ------------------------------------------------------------
+// The core pipeline, parameterized by philosophy so savings can be computed by
+// running it twice (current philosophy vs ultralight) and diffing weight.
+
+interface FiredEntry {
+  item: Item
+  qty: number
+  rules: KitRule[]
+}
+
+const CATALOG_INDEX = new Map(ITEMS.map((item, i) => [item.id, i]))
+
+function fireEntries(a: WizardAnswers, philosophy: Philosophy): FiredEntry[] {
+  // 1. Evaluate every rule; merge firing rules by item. An item entering
+  //    through several rules (aspirin: multi-day OR 60+) becomes one row:
+  //    max quantity, all rules kept (chips union), cuttable only if unanimous.
+  const fired = new Map<string, { rules: KitRule[]; qty: number; scalable: boolean }>()
+  for (const rule of KIT_RULES) {
+    if (!ruleFires(rule, a)) continue
+    const { n, scalable } = resolveQty(rule.qty, a)
+    const prev = fired.get(rule.itemId)
+    if (prev) {
+      prev.rules.push(rule)
+      prev.qty = Math.max(prev.qty, n)
+      prev.scalable = prev.scalable || scalable
+    } else {
+      fired.set(rule.itemId, { rules: [rule], qty: n, scalable })
+    }
+  }
+
+  // 2. Philosophy. Comprehensive scales consumable (ladder) quantities;
+  //    ultralight drops rows where every firing rule marked itself cuttable.
+  const entries: FiredEntry[] = []
+  for (const [itemId, entry] of fired) {
+    if (philosophy === 'comprehensive' && entry.scalable) {
+      entry.qty = Math.ceil(entry.qty * PHILOSOPHY.comprehensiveScale)
+    }
+    if (philosophy === 'ultralight' && entry.rules.every((r) => r.cuttable)) continue
+    const item = ITEM_BY_ID.get(itemId)
+    if (!item) throw new Error(`rule references unknown item: ${itemId}`) // integrity backstop
+    entries.push({ item, qty: entry.qty, rules: entry.rules })
+  }
+
+  // 3. Deterministic order: catalog position, never rules-file layout.
+  return entries.sort((x, y) => CATALOG_INDEX.get(x.item.id)! - CATALOG_INDEX.get(y.item.id)!)
+}
+
+const entriesWeightOz = (entries: FiredEntry[]) =>
+  entries.reduce((s, e) => s + e.qty * e.item.weightOz, 0)
+
 // --- Attribution chips --------------------------------------------------------
 // Only module triggers chip; core/scaling/tier arrivals stay unlabeled — the
-// row not needing an excuse is what "core" means.
+// row not needing an excuse is what "core" means. Chips carry kind+value as
+// stable identity; label is presentation.
 
 const ACTIVITY_LABEL: Record<Activity, string> = {
   backpacking: 'backpacking', river: 'river & paddling', cycling: 'cycling', car: 'car',
@@ -88,26 +145,16 @@ const CONDITION_LABEL: Record<Condition, string> = {
   'severe-allergies': 'allergies', 'adults-60-plus': '60+', 'daily-rx-meds': 'daily meds',
 }
 
-function chipLabel(t: Trigger): string | null {
+function chip(t: Trigger): KitChip | null {
   switch (t.kind) {
-    case 'activity': return ACTIVITY_LABEL[t.activity]
-    case 'environment': return ENVIRONMENT_LABEL[t.environment]
-    case 'condition': return CONDITION_LABEL[t.condition]
-    case 'kids': return 'kids'
-    case 'pets': return 'pets'
+    case 'activity': return { kind: 'activity', value: t.activity, label: ACTIVITY_LABEL[t.activity] }
+    case 'environment': return { kind: 'environment', value: t.environment, label: ENVIRONMENT_LABEL[t.environment] }
+    case 'condition': return { kind: 'condition', value: t.condition, label: CONDITION_LABEL[t.condition] }
+    case 'kids': return { kind: 'kids', value: 'kids', label: 'kids' }
+    case 'pets': return { kind: 'pets', value: 'pets', label: 'pets' }
     default: return null
   }
 }
-
-// --- Sections -----------------------------------------------------------------
-
-const SECTION_ORDER: { category: Category; title: string; note: string | null }[] = [
-  { category: 'bandages', title: 'Bandages & wound care', note: null },
-  { category: 'blister', title: 'Blister & foot care', note: null },
-  { category: 'meds', title: 'Medications', note: 'all over-the-counter, unit-dose packets' },
-  { category: 'tools', title: 'Tools & instruments', note: null },
-  { category: 'trauma', title: 'Trauma layer', note: null }, // note set per training below
-]
 
 // --- Default kit name -----------------------------------------------------------
 
@@ -127,93 +174,64 @@ const DISCLAIMER =
 // --- The engine -----------------------------------------------------------------
 
 export function buildKit(a: WizardAnswers): Kit {
-  // 1. Evaluate every rule; group the firing ones by item. An item entering
-  //    through several rules (aspirin: multi-day OR 60+) merges into one row:
-  //    max quantity, union of chips, cuttable only if every reason says so.
-  const fired = new Map<string, { rules: KitRule[]; qty: number; scalable: boolean }>()
-  for (const rule of KIT_RULES) {
-    if (!ruleFires(rule, a)) continue
-    const { n, scalable } = resolveQty(rule.qty, a)
-    const prev = fired.get(rule.itemId)
-    if (prev) {
-      prev.rules.push(rule)
-      prev.qty = Math.max(prev.qty, n)
-      prev.scalable = prev.scalable || scalable
-    } else {
-      fired.set(rule.itemId, { rules: [rule], qty: n, scalable })
-    }
-  }
+  const entries = fireEntries(a, a.philosophy)
 
-  // 2. Philosophy. Comprehensive: scalable (ladder) quantities up 25%.
-  //    Ultralight: drop rows where every firing rule is cuttable.
-  //    The savings figure is computed either way — it powers the re-tune line.
-  let ultralightSavingsOz = 0
-  for (const [itemId, entry] of fired) {
-    if (a.philosophy === 'comprehensive' && entry.scalable) {
-      entry.qty = Math.ceil(entry.qty * 1.25)
+  // Materialize rows.
+  const rows: KitItem[] = entries.map(({ item, qty, rules }) => {
+    const chips: KitChip[] = []
+    for (const rule of rules) {
+      const c = chip(rule.trigger)
+      if (c && !chips.some((x) => x.kind === c.kind && x.value === c.value)) chips.push(c)
     }
-    const cuttable = entry.rules.every((r) => r.cuttable)
-    if (cuttable) {
-      const item = ITEM_BY_ID.get(itemId)!
-      ultralightSavingsOz += entry.qty * item.weightOz
-      if (a.philosophy === 'ultralight') fired.delete(itemId)
-    }
-  }
-
-  // 3. Materialize rows.
-  const rows: KitItem[] = []
-  for (const [itemId, entry] of fired) {
-    const item = ITEM_BY_ID.get(itemId)
-    if (!item) throw new Error(`rule references unknown item: ${itemId}`)
-    const chips = [...new Set(entry.rules.map((r) => chipLabel(r.trigger)).filter((c): c is string => c !== null))]
-    rows.push({
+    return {
       itemId: item.id,
       name: item.name,
       application: item.application,
-      qty: entry.qty,
+      qty,
       unit: item.unit,
-      weightOz: Math.round(entry.qty * item.weightOz * 100) / 100,
-      price: item.price,
+      weightOz: Math.round(qty * item.weightOz * 100) / 100,
+      priceCents: item.priceCents,
       retailer: item.retailer,
       purchaseUrl: item.purchaseUrl,
       imageUrl: item.imageUrl,
       imageAlt: item.imageAlt,
       chips,
-    })
-  }
-
-  // 4. Sections, in catalog order within fixed section order.
-  const trainedForTrauma = TRAINING_LEVELS.indexOf(a.training) >= TRAINING_LEVELS.indexOf('wfa-wfr')
-  const sections = SECTION_ORDER.map(({ category, title, note }) => ({
-    category,
-    title,
-    note:
-      category === 'trauma'
-        ? trainedForTrauma
-          ? 'requires training to use'
-          : 'get trained before you carry this — see Before you go'
-        : note,
-    items: rows.filter((r) => ITEM_BY_ID.get(r.itemId)!.category === category),
-  })).filter((s) => s.items.length > 0)
-
-  // 5. Flags and nudges — same trigger algebra, different outputs.
-  const flags = FLAG_RULES.filter((f) => ruleFires(f, a)).map(({ name, why }) => ({ name, why }))
-  const nudges = NUDGE_RULES.filter((n) => ruleFires(n, a)).map(({ title, desc }) => ({ title, desc }))
-
-  // 6. Bag options.
-  const bagRule = BAG_RULES.find((b) => b.activity === a.activity)
-  if (!bagRule) throw new Error(`no bag rule for activity: ${a.activity}`)
-  const preselectId = bagRule.preselect[a.philosophy]
-  const bagOptions = bagRule.optionIds.map((id) => {
-    const c = CONTAINER_BY_ID.get(id)
-    if (!c) throw new Error(`bag rule references unknown container: ${id}`)
-    return { ...c, preselected: id === preselectId }
+    }
   })
 
-  // 7. Stats. Cost counts each row's retail listing once — qty tells you how
-  //    many to pack, not how many boxes to buy.
-  const totalWeightOz = Math.round(rows.reduce((s, r) => s + r.weightOz, 0) * 10) / 10
-  const estCost = Math.round(rows.reduce((s, r) => s + r.price, 0))
+  // Sections, ordered by model metadata; row order is catalog order (above).
+  const trainedForTrauma = TRAINING_LEVELS.indexOf(a.training) >= TRAINING_LEVELS.indexOf('wfa-wfr')
+  const sections = (Object.entries(SECTIONS) as [Category, (typeof SECTIONS)[Category]][])
+    .sort(([, x], [, y]) => x.order - y.order)
+    .map(([category, meta]) => ({
+      category,
+      title: meta.title,
+      note: meta.noteByTraining
+        ? (trainedForTrauma ? meta.noteByTraining.trained : meta.noteByTraining.untrained)
+        : meta.note,
+      items: rows.filter((r) => ITEM_BY_ID.get(r.itemId)!.category === category),
+    }))
+    .filter((s) => s.items.length > 0)
+
+  // Flags and nudges — same trigger algebra, different outputs. ids are API identity.
+  const flags = FLAG_RULES.filter((f) => ruleFires(f, a)).map(({ id, name, why }) => ({ id, name, why }))
+  const nudges = NUDGE_RULES.filter((n) => ruleFires(n, a)).map(({ id, title, desc }) => ({ id, title, desc }))
+
+  // Bag options.
+  const bagRule = BAG_RULES.find((b) => b.activity === a.activity)
+  if (!bagRule) throw new Error(`no bag rule for activity: ${a.activity}`) // integrity backstop
+  const preselectId = bagRule.preselect[a.philosophy]
+  const bagOptions = bagRule.optionIds.map((id) => ({ ...CONTAINER_BY_ID.get(id)!, preselected: id === preselectId }))
+
+  // Stats. Cost counts each row's retail listing once — qty tells you how many
+  // to pack, not how many boxes to buy. Savings is honest: the actual weight
+  // difference between this kit and the same answers rebuilt as ultralight.
+  const totalWeightOz = Math.round(entriesWeightOz(entries) * 10) / 10
+  const estCostCents = rows.reduce((s, r) => s + r.priceCents, 0)
+  const ultralightSavingsOz =
+    a.philosophy === 'ultralight'
+      ? null
+      : Math.round((entriesWeightOz(entries) - entriesWeightOz(fireEntries(a, 'ultralight'))) * 10) / 10
 
   return {
     defaultName: defaultName(a),
@@ -227,8 +245,8 @@ export function buildKit(a: WizardAnswers): Kit {
     stats: {
       itemCount: rows.length,
       totalWeightOz,
-      estCost,
-      ultralightSavingsOz: a.philosophy === 'ultralight' ? null : Math.round(ultralightSavingsOz * 10) / 10,
+      estCostCents,
+      ultralightSavingsOz,
     },
     checkIn: a.conditions.kind === 'unsure' ? ['conditions'] : [],
     disclaimer: DISCLAIMER,

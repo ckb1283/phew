@@ -22,8 +22,10 @@ const MOCK_SCENARIO: WizardAnswers = {
 
 const kit = buildKit(MOCK_SCENARIO)
 
+const usd = (cents: number) => `~$${(cents / 100).toFixed(0)}`
+
 console.log(`\n${kit.defaultName}`)
-console.log(`${kit.stats.itemCount} items · ${kit.stats.totalWeightOz} oz · ~$${kit.stats.estCost}`)
+console.log(`${kit.stats.itemCount} items · ${kit.stats.totalWeightOz} oz · ${usd(kit.stats.estCostCents)}`)
 if (kit.stats.ultralightSavingsOz !== null) {
   console.log(`ultralight cut would drop ~${kit.stats.ultralightSavingsOz} oz`)
 }
@@ -36,8 +38,8 @@ for (const b of kit.bag.options) {
 for (const s of kit.sections) {
   console.log(`\n${s.title.toUpperCase()}${s.note ? ` — ${s.note}` : ''}`)
   for (const i of s.items) {
-    const chips = i.chips.length ? `  [${i.chips.join(', ')}]` : ''
-    console.log(`  ${i.name}  ×${i.qty}  ${i.weightOz} oz  ${i.retailer} · $${i.price}${chips}`)
+    const chips = i.chips.length ? `  [${i.chips.map((c) => c.label).join(', ')}]` : ''
+    console.log(`  ${i.name}  ×${i.qty}  ${i.weightOz} oz  ${i.retailer} · ${usd(i.priceCents)}${chips}`)
   }
 }
 

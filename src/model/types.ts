@@ -9,13 +9,18 @@
 // changing it here too.
 // ---------------------------------------------------------------------------
 
-export type Activity = 'backpacking' | 'river' | 'cycling' | 'car'
+// Every enum is a single `as const` array with its type derived from it —
+// validate.ts and the engine import THESE, never re-declare. A value added
+// here is automatically accepted at the API boundary.
+export const ACTIVITIES = ['backpacking', 'river', 'cycling', 'car'] as const
+export type Activity = (typeof ACTIVITIES)[number]
 
 // Ordered least→most remote; rules compare by position in this list.
 export const HOURS_TO_CARE = ['under-1', 'few', '12-plus', 'day-plus'] as const
 export type HoursToCare = (typeof HOURS_TO_CARE)[number]
 
-export type Condition = 'severe-allergies' | 'adults-60-plus' | 'daily-rx-meds'
+export const CONDITIONS = ['severe-allergies', 'adults-60-plus', 'daily-rx-meds'] as const
+export type Condition = (typeof CONDITIONS)[number]
 
 // "I'm not sure" is a real answer state, not a default: it makes the engine
 // emit a pre-generation check-in instead of silently assuming "none".
@@ -23,15 +28,18 @@ export type ConditionsAnswer =
   | { kind: 'known'; conditions: Condition[] }
   | { kind: 'unsure' }
 
-export type Environment =
-  | 'high-altitude' | 'hot-sun' | 'cold-winter' | 'tropical-humid'
-  | 'ticks-insects' | 'snake-country' | 'poison-oak-ivy' | 'open-water' | 'wildfire-smoke'
+export const ENVIRONMENTS = [
+  'high-altitude', 'hot-sun', 'cold-winter', 'tropical-humid',
+  'ticks-insects', 'snake-country', 'poison-oak-ivy', 'open-water', 'wildfire-smoke',
+] as const
+export type Environment = (typeof ENVIRONMENTS)[number]
 
 // Ordered least→most trained; rules compare by position in this list.
 export const TRAINING_LEVELS = ['none', 'basic', 'wfa-wfr', 'medical-professional'] as const
 export type Training = (typeof TRAINING_LEVELS)[number]
 
-export type Philosophy = 'ultralight' | 'balanced' | 'comprehensive'
+export const PHILOSOPHIES = ['ultralight', 'balanced', 'comprehensive'] as const
+export type Philosophy = (typeof PHILOSOPHIES)[number]
 
 export interface WizardAnswers {
   activity: Activity
@@ -66,9 +74,11 @@ export interface Item {
   category: Category // determines section placement — never the search origin
   unit: string // what qty counts: 'strip', '2-pack', 'pair', 'inch', …
   weightOz: number // per unit; row weight = qty × weightOz
-  // Price of the retail listing (a box of bandages), counted once per kit row
-  // regardless of qty — matches how the buyer actually pays.
-  price: number
+  // Approximate price of the retail listing (a box of bandages), in integer
+  // cents — never float dollars. Counted once per kit row regardless of qty.
+  // Prices are estimates; clients display "~$". Kept current by hand until
+  // retailer work lands.
+  priceCents: number
   retailer: string
   purchaseUrl: string
   imageUrl: string | null // peek feature; null renders "photo pending"
@@ -80,8 +90,19 @@ export interface Container {
   name: string
   desc: string
   weightOz: number | null // null = user-supplied (own bag, ziplock)
-  price: number | null
+  priceCents: number | null // integer cents, approximate; null = user-supplied
   imageUrl: string | null
+}
+
+// Section metadata is model data, not engine code. Record<Category, SectionMeta>
+// makes a new Category uncompilable until it has a section — items can never
+// fire rules yet silently render nowhere.
+export interface SectionMeta {
+  title: string
+  order: number
+  note: string | null
+  // When set, overrides `note` based on the user's training answer (trauma).
+  noteByTraining?: { trained: string; untrained: string }
 }
 
 // ---------------------------------------------------------------------------
@@ -105,14 +126,19 @@ export type Trigger =
   | { kind: 'training'; op: 'at-least' | 'at-most'; level: Training }
 
 // Quantity is either fixed (tools never scale — one forceps serves any group),
-// per-person (emergency blankets), or a person-day ladder: ordered
-// [maxPersonDays, qty] steps, mirroring how AMK/NOLS actually publish tiers.
-// Ladders are sub-linear by construction — the steps grow slower than
-// person-days do.
+// per-person (emergency blankets), or a person-day ladder mirroring how
+// AMK/NOLS actually publish tiers. Steps are named objects, not tuples —
+// [[3, 5]] is anonymous the moment it hits JSON or a database. The last step
+// omits upToPersonDays (open-ended); no Infinity, which JSON cannot carry.
+// Ladders are sub-linear by construction — steps grow slower than person-days.
+export interface LadderStep {
+  upToPersonDays?: number // absent on the terminal step only
+  qty: number
+}
 export type Qty =
   | { kind: 'fixed'; n: number }
   | { kind: 'per-person'; n: number }
-  | { kind: 'ladder'; steps: [maxPersonDays: number, qty: number][] }
+  | { kind: 'ladder'; steps: LadderStep[] }
 
 export interface KitRule {
   itemId: string
@@ -156,6 +182,14 @@ export interface BagRule {
 // Engine output — what POST /api/kit returns and what the results screen renders.
 // ---------------------------------------------------------------------------
 
+// A chip carries its semantic identity, not just display copy — clients key,
+// style, and link on kind/value; label is presentation.
+export interface KitChip {
+  kind: 'activity' | 'environment' | 'condition' | 'kids' | 'pets'
+  value: string // the enum value ('hot-sun'), stable across copy changes
+  label: string // display text ('hot & sun')
+}
+
 export interface KitItem {
   itemId: string
   name: string
@@ -163,12 +197,12 @@ export interface KitItem {
   qty: number
   unit: string
   weightOz: number // row total
-  price: number
+  priceCents: number // approximate; display as ~$
   retailer: string
   purchaseUrl: string
   imageUrl: string | null
   imageAlt: string | null
-  chips: string[] // human labels of module triggers ("backpacking", "hot & sun")
+  chips: KitChip[]
 }
 
 export interface KitSection {
@@ -185,19 +219,22 @@ export interface Kit {
     options: (Container & { preselected: boolean })[]
   }
   sections: KitSection[]
-  flags: { name: string; why: string }[]
-  nudges: { title: string; desc: string }[]
+  // ids are stable API identity; name/why/title/desc are copy and may change
+  flags: { id: string; name: string; why: string }[]
+  nudges: { id: string; title: string; desc: string }[]
   stats: {
     itemCount: number
     totalWeightOz: number
-    estCost: number
+    estCostCents: number // approximate; display as ~$
     ultralightSavingsOz: number | null // powers the re-tune line; null when already ultralight
   }
   // Answers the wizard should re-confirm before the list is trusted
   // ("I'm not sure" on conditions). Empty when everything resolved.
-  checkIn: string[]
+  checkIn: CheckInTopic[]
   disclaimer: string
 }
+
+export type CheckInTopic = 'conditions'
 
 // ---------------------------------------------------------------------------
 // Persistence shapes (Postgres-bound; arrive with shareable lists).

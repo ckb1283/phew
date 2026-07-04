@@ -2,15 +2,18 @@
 // types; nothing before it does. Hand-rolled while the shape is this small —
 // a schema library (zod) is the move when inputs multiply.
 
-import { HOURS_TO_CARE, TRAINING_LEVELS, type Condition, type WizardAnswers } from './model/types.js'
-
-const ACTIVITIES = ['backpacking', 'river', 'cycling', 'car'] as const
-const CONDITIONS = ['severe-allergies', 'adults-60-plus', 'daily-rx-meds'] as const
-const ENVIRONMENTS = [
-  'high-altitude', 'hot-sun', 'cold-winter', 'tropical-humid',
-  'ticks-insects', 'snake-country', 'poison-oak-ivy', 'open-water', 'wildfire-smoke',
-] as const
-const PHILOSOPHIES = ['ultralight', 'balanced', 'comprehensive'] as const
+// Enum arrays come from types.ts — the single source. A value added to the
+// model is automatically accepted here; nothing to keep in sync.
+import {
+  ACTIVITIES,
+  CONDITIONS,
+  ENVIRONMENTS,
+  HOURS_TO_CARE,
+  PHILOSOPHIES,
+  TRAINING_LEVELS,
+  type Condition,
+  type WizardAnswers,
+} from './model/types.js'
 
 type Result = { ok: true; answers: WizardAnswers } | { ok: false; errors: string[] }
 
