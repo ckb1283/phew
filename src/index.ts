@@ -2,6 +2,7 @@ import { serve } from '@hono/node-server'
 import { serveStatic } from '@hono/node-server/serve-static'
 import { Hono } from 'hono'
 import { buildKit } from './engine.js'
+import { ITEMS } from './model/catalog.js'
 import { validateModel } from './model/integrity.js'
 import { parseWizardAnswers } from './validate.js'
 
@@ -28,6 +29,10 @@ app.post('/api/kit', async (c) => {
   }
   return c.json(buildKit(parsed.answers))
 })
+
+// The item catalog — powers the results screen's add-item search
+// (name + application text are the search index; category routes placement)
+app.get('/api/catalog', (c) => c.json({ items: ITEMS }))
 
 // --- The React app (built by `vite build` into dist/public) -----------------
 // Order matters, and this arrangement can't shadow the API: registered routes

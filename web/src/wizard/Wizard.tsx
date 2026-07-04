@@ -60,6 +60,16 @@ export function answeredCount(v: WizardValues): number {
 
 export const QUESTION_COUNT = 8
 
+// "Label: answer" lines for the doctor-email composer (mock 03 format)
+export function summaryLines(v: WizardValues): string[] {
+  const labels = ['Activity', 'Your people', 'Duration', 'Distance from help', 'Conditions', 'Environment', 'Training', 'Packing style']
+  const values = [
+    summarize.activity(v), summarize.group(v), summarize.duration(v), summarize.hours(v),
+    summarize.conditions(v), summarize.environments(v), summarize.training(v), summarize.philosophy(v),
+  ]
+  return labels.map((label, i) => `${label}: ${values[i] ?? '—'}`)
+}
+
 // --- Section chrome ----------------------------------------------------------
 
 function QaShell(props: {

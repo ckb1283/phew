@@ -376,6 +376,10 @@ button { font: inherit; cursor: pointer; }
 /* The centered status card on the wizard canvas (was inline styles in mock 02) */
 .canvas-card { text-align: center; max-width: 380px; padding: var(--space-10); }
 
+/* A button that reads as an inline link (re-tune line; was an <a> in mock 03) */
+.link-btn { background: none; border: none; padding: 0; color: var(--accent-600); cursor: pointer; font: inherit; }
+.link-btn:hover { text-decoration: underline; }
+
 /* Loading state: breathe the topo art while the kit assembles */
 .canvas.is-loading .canvas-art { animation: topo-pulse 1.1s ease-in-out infinite; }
 @keyframes topo-pulse {

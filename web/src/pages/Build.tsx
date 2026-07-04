@@ -1,8 +1,9 @@
-import { useState } from 'react'
-import type { Condition, Kit } from '@model/types'
+import { useEffect, useState } from 'react'
+import type { Condition, Kit, Philosophy } from '@model/types'
+import KitView from '../kit/KitView'
 import { fetchKit, type WireAnswers } from '../lib/api'
-import Wizard, { answeredCount, INITIAL_VALUES, QUESTION_COUNT, type WizardValues } from '../wizard/Wizard'
-import { CONDITION_OPTIONS } from '../wizard/config'
+import { CONDITION_OPTIONS, PHILOSOPHY_OPTIONS } from '../wizard/config'
+import Wizard, { answeredCount, INITIAL_VALUES, QUESTION_COUNT, summaryLines, type WizardValues } from '../wizard/Wizard'
 
 type Phase =
   | { kind: 'answering' }
@@ -26,23 +27,47 @@ function toWire(v: WizardValues, conditions: Condition[]): WireAnswers {
   }
 }
 
+// Survive a refresh (session-scoped; real persistence is the Postgres milestone)
+const STORE_KEY = 'phew-build'
+function restore(): { values: WizardValues; kit: Kit | null } {
+  try {
+    const raw = sessionStorage.getItem(STORE_KEY)
+    if (raw) return JSON.parse(raw)
+  } catch { /* corrupted or unavailable storage → start fresh */ }
+  return { values: INITIAL_VALUES, kit: null }
+}
+
 export default function Build() {
-  const [values, setValues] = useState<WizardValues>(INITIAL_VALUES)
-  const [phase, setPhase] = useState<Phase>({ kind: 'answering' })
+  const [{ values, phase }, setState] = useState<{ values: WizardValues; phase: Phase }>(() => {
+    const saved = restore()
+    return { values: saved.values, phase: saved.kit ? { kind: 'ready', kit: saved.kit } : { kind: 'answering' } }
+  })
+
+  useEffect(() => {
+    sessionStorage.setItem(
+      STORE_KEY,
+      JSON.stringify({ values, kit: phase.kind === 'ready' ? phase.kit : null }),
+    )
+  }, [values, phase])
+
+  const setValues = (v: WizardValues) =>
+    // Editing an answer after the kit exists invalidates it — back to answering
+    setState((s) => ({ values: v, phase: s.phase.kind === 'ready' ? { kind: 'answering' } : s.phase }))
+  const setPhase = (p: Phase) => setState((s) => ({ ...s, phase: p }))
 
   const answered = answeredCount(values)
   const complete = answered === QUESTION_COUNT
 
-  const build = async (conditions: Condition[]) => {
-    setPhase({ kind: 'loading' })
+  const buildWith = async (v: WizardValues, conditions: Condition[]) => {
+    setState({ values: v, phase: { kind: 'loading' } })
     try {
       // Floor the loading state at ~1.2s so the canvas pulse reads as a moment,
       // not a flicker — the engine itself answers in milliseconds.
       const [kit] = await Promise.all([
-        fetchKit(toWire(values, conditions)),
+        fetchKit(toWire(v, conditions)),
         new Promise((r) => setTimeout(r, 1200)),
       ])
-      setPhase({ kind: 'ready', kit })
+      setState({ values: v, phase: { kind: 'ready', kit } })
     } catch (e) {
       setPhase({ kind: 'error', message: e instanceof Error ? e.message : 'something went wrong' })
     }
@@ -52,8 +77,15 @@ export default function Build() {
     // Pre-generation check-in: "I'm not sure" never becomes a silent default —
     // the canvas re-asks before the list exists (design/notes.md iteration 4).
     if (values.conditions === 'unsure') setPhase({ kind: 'checkin' })
-    else build(values.conditions === null ? [] : values.conditions)
+    else buildWith(values, values.conditions === null ? [] : values.conditions)
   }
+
+  const retune = () => {
+    const v: WizardValues = { ...values, philosophy: 'ultralight' as Philosophy }
+    buildWith(v, v.conditions === 'unsure' || v.conditions === null ? [] : v.conditions)
+  }
+
+  const ready = phase.kind === 'ready'
 
   return (
     <div className="split">
@@ -77,8 +109,9 @@ export default function Build() {
         </p>
       </aside>
 
-      <main className={`canvas${phase.kind === 'loading' ? ' is-loading' : ''}`}>
-        <CanvasTopo />
+      <main className={`canvas${ready ? ' canvas-results' : ''}${phase.kind === 'loading' ? ' is-loading' : ''}`}>
+        {!ready && <CanvasTopo />}
+
         {phase.kind === 'answering' && (
           <div className="card canvas-card">
             <h2>{complete ? 'Ready when you are' : 'Your kit builds here'}</h2>
@@ -87,6 +120,7 @@ export default function Build() {
             </p>
           </div>
         )}
+
         {phase.kind === 'loading' && (
           <div className="card canvas-card">
             <h2>Assembling your kit…</h2>
@@ -95,14 +129,15 @@ export default function Build() {
             </p>
           </div>
         )}
+
         {phase.kind === 'checkin' && (
           <CheckIn
             onConfirm={(conditions) => {
-              setValues({ ...values, conditions })
-              build(conditions)
+              buildWith({ ...values, conditions }, conditions)
             }}
           />
         )}
+
         {phase.kind === 'error' && (
           <div className="card canvas-card">
             <h2>That didn't work</h2>
@@ -112,15 +147,14 @@ export default function Build() {
             </button>
           </div>
         )}
+
         {phase.kind === 'ready' && (
-          /* Placeholder summary — the full results screen (mock 03) is the next milestone */
-          <div className="card canvas-card">
-            <h2>phew.</h2>
-            <p className="text-muted text-small" style={{ marginTop: 'var(--space-2)' }}>
-              {phase.kit.defaultName} · {phase.kit.stats.itemCount} items ·{' '}
-              {phase.kit.stats.totalWeightOz} oz · ~${Math.round(phase.kit.stats.estCostCents / 100)}
-            </p>
-          </div>
+          <KitView
+            kit={phase.kit}
+            philosophyLabel={PHILOSOPHY_OPTIONS.find((o) => o.value === values.philosophy)?.title ?? 'Balanced'}
+            tripLines={summaryLines(values)}
+            onRetune={values.philosophy !== 'ultralight' ? retune : null}
+          />
         )}
       </main>
     </div>
