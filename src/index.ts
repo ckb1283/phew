@@ -1,4 +1,5 @@
 import { serve } from '@hono/node-server'
+import { serveStatic } from '@hono/node-server/serve-static'
 import { Hono } from 'hono'
 import { buildKit } from './engine.js'
 import { validateModel } from './model/integrity.js'
@@ -10,9 +11,7 @@ validateModel()
 
 const app = new Hono()
 
-app.get('/', (c) => c.text('phew — the right kit for your trip 🩹 (deployed by git push)'))
-
-app.get('/health', (c) => c.json({ status: 'ok', version: '0.0.4' }))
+app.get('/health', (c) => c.json({ status: 'ok', version: '0.1.0' }))
 
 // The engine over HTTP: wizard answers in, kit out. Deterministic and
 // stateless — no database until lists become shareable.
@@ -29,6 +28,22 @@ app.post('/api/kit', async (c) => {
   }
   return c.json(buildKit(parsed.answers))
 })
+
+// --- The React app (built by `vite build` into dist/public) -----------------
+// Order matters, and this arrangement can't shadow the API: registered routes
+// above always win; serveStatic passes through on a miss.
+// serveStatic resolves root against process.cwd() — every entry point
+// (npm start, npm run dev) runs from the package root, so cwd is app/.
+
+// 1) Hashed assets, fonts, index.html at /
+app.use('/*', serveStatic({ root: './dist/public' }))
+
+// 2) Unknown API paths 404 as JSON — never receive index.html
+app.all('/api/*', (c) => c.json({ error: 'not found' }, 404))
+
+// 3) SPA fallback: any remaining GET (e.g. a /build deep link or refresh)
+//    gets the shell; React Router takes over client-side
+app.get('*', serveStatic({ root: './dist/public', path: 'index.html' }))
 
 // Railway injects PORT; 3000 is the local-dev fallback
 const port = Number(process.env.PORT ?? 3000)
