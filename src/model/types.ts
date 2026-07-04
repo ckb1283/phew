@@ -124,6 +124,7 @@ export type Trigger =
   | { kind: 'kids' }
   | { kind: 'pets' }
   | { kind: 'training'; op: 'at-least' | 'at-most'; level: Training }
+  | { kind: 'philosophy'; is: Philosophy } // comprehensive-only items (SAM splint)
 
 // Quantity is either fixed (tools never scale — one forceps serves any group),
 // per-person (emergency blankets), or a person-day ladder mirroring how

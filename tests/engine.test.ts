@@ -29,11 +29,19 @@ test('model integrity holds', () => {
   validateModel()
 })
 
-test('golden fixture: the 03-results mock scenario reproduces the mock', () => {
+test('golden fixture: the 03-results mock scenario, plus the v0.3 research additions', () => {
   const kit = buildKit(MOCK_SCENARIO)
 
   assert.equal(kit.defaultName, 'The Weekend-Plus Backpacker')
-  assert.equal(kit.stats.itemCount, 30)
+  // 30 rows matched the mock exactly; the 2026-07-04 catalog expansion added
+  // 6 research-mandated rows to this scenario (content decision, research >
+  // mock parity): liquid bandage + cloth tape (core), povidone-iodine (12+ hrs),
+  // trauma pad 5×9 + finger splint (≥4 person-days), reference guide (≥4 days).
+  assert.equal(kit.stats.itemCount, 36)
+  for (const id of ['liquid-bandage', 'cloth-tape', 'povidone-iodine', 'trauma-pad-5x9', 'finger-splint', 'reference-guide']) {
+    assert.ok(findItem(kit, id), `${id} should enter the golden scenario`)
+  }
+  assert.equal(findItem(kit, 'povidone-iodine')?.qty, 4)
   assert.deepEqual(kit.sections.map((s) => s.title), [
     'Bandages & wound care', 'Blister & foot care', 'Medications', 'Tools & instruments', 'Trauma layer',
   ])
@@ -130,6 +138,40 @@ test('untrained users get the get-trained trauma copy and nudge', () => {
   )
   assert.ok(kit.nudges.some((n) => n.id === 'get-trained'))
   assert.ok(!kit.nudges.some((n) => n.id === 'keep-cert-current'))
+})
+
+test('SAM splint is comprehensive-only', () => {
+  assert.equal(findItem(buildKit(MOCK_SCENARIO), 'sam-splint'), undefined) // balanced
+  assert.ok(findItem(buildKit({ ...MOCK_SCENARIO, philosophy: 'comprehensive' }), 'sam-splint'))
+  assert.equal(findItem(buildKit({ ...MOCK_SCENARIO, philosophy: 'ultralight' }), 'sam-splint'), undefined)
+})
+
+test('chest seals need deep remoteness AND wilderness training', () => {
+  const deepTrained = buildKit({ ...MOCK_SCENARIO, hoursToCare: 'day-plus' }) // wfa-wfr
+  const deepUntrained = buildKit({ ...MOCK_SCENARIO, hoursToCare: 'day-plus', training: 'basic' })
+  const nearTrained = buildKit(MOCK_SCENARIO) // 12-plus
+  assert.ok(findItem(deepTrained, 'chest-seals'))
+  assert.equal(findItem(deepUntrained, 'chest-seals'), undefined)
+  assert.equal(findItem(nearTrained, 'chest-seals'), undefined)
+})
+
+test('search-only items are in the catalog but never auto-enter a kit', () => {
+  const SEARCH_ONLY = [
+    'moleskin', 'benzoin', 'electrolyte-tablets', 'cold-flu', 'repellent', 'headlamp',
+    'thermometer', 'pulse-oximeter', 'zip-closure', 'bacitracin', 'antifungal-cream',
+    'loratadine', 'bismuth', 'throat-lozenges', 'hand-sanitizer', 'mini-marker',
+  ]
+  // A maximal scenario: every module and tier that can fire, fires
+  const maximal = buildKit({
+    activity: 'river', people: 8, kids: true, pets: true, days: 30,
+    hoursToCare: 'day-plus',
+    conditions: { kind: 'known', conditions: ['severe-allergies', 'adults-60-plus', 'daily-rx-meds'] },
+    environments: ['high-altitude', 'hot-sun', 'cold-winter', 'tropical-humid', 'ticks-insects', 'snake-country', 'poison-oak-ivy', 'open-water', 'wildfire-smoke'],
+    training: 'medical-professional', philosophy: 'comprehensive',
+  })
+  for (const id of SEARCH_ONLY) {
+    assert.equal(findItem(maximal, id), undefined, `${id} must never auto-enter`)
+  }
 })
 
 test('output is JSON-safe (no Infinity/NaN anywhere)', () => {

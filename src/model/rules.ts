@@ -23,6 +23,14 @@ export const KIT_RULES: KitRule[] = [
   { itemId: 'antiseptic-wipes', trigger: { kind: 'core' }, qty: { kind: 'ladder', steps: [{ upToPersonDays: 3, qty: 4 }, { upToPersonDays: 10, qty: 6 }, { qty: 10 }] } },
   { itemId: 'antibiotic-ointment', trigger: { kind: 'core' }, qty: { kind: 'ladder', steps: [{ upToPersonDays: 3, qty: 2 }, { upToPersonDays: 10, qty: 4 }, { qty: 6 }] } },
   { itemId: 'elastic-bandage', trigger: { kind: 'core' }, qty: { kind: 'fixed', n: 1 } },
+  // Catalog v0.3 core additions (research pass 2026-07-04)
+  { itemId: 'liquid-bandage', trigger: { kind: 'core' }, qty: { kind: 'fixed', n: 1 } },
+  { itemId: 'cloth-tape', trigger: { kind: 'core' }, qty: { kind: 'fixed', n: 1 } },
+  // Antisepsis backup when clean water is uncertain (remote tier)
+  { itemId: 'povidone-iodine', trigger: { kind: 'remoteness', min: '12-plus' }, qty: { kind: 'ladder', steps: [{ upToPersonDays: 10, qty: 4 }, { qty: 6 }] } },
+  // Absorbency tiers: 5×9 with any multi-day party, 8×10 at group scale
+  { itemId: 'trauma-pad-5x9', trigger: { kind: 'person-days', min: 4 }, qty: { kind: 'fixed', n: 2 } },
+  { itemId: 'trauma-pad-8x10', trigger: { kind: 'group', minPeople: 4 }, qty: { kind: 'fixed', n: 2 } },
   // Irrigation unlocks at multi-day (T1 tier: the key field wound intervention)
   { itemId: 'irrigation-syringe', trigger: { kind: 'duration', minDays: 2 }, qty: { kind: 'fixed', n: 1 } },
   // Burn care is CORE for overnight trips — everyone cooks on flame (notes.md it.3)
@@ -51,6 +59,11 @@ export const KIT_RULES: KitRule[] = [
   { itemId: 'meclizine', trigger: { kind: 'activity', activity: 'river' }, qty: { kind: 'fixed', n: 4 } },
   { itemId: 'hydrocortisone', trigger: { kind: 'environment', environment: 'poison-oak-ivy' }, qty: { kind: 'fixed', n: 4 } },
   { itemId: 'hydrocortisone', trigger: { kind: 'environment', environment: 'tropical-humid' }, qty: { kind: 'fixed', n: 4 } },
+  // Week-plus gut coverage (taxonomy §7)
+  { itemId: 'antacid', trigger: { kind: 'duration', minDays: 7 }, qty: { kind: 'fixed', n: 6 }, cuttable: true },
+  // Hypothermia sugar: river doctrine OR winter (T3)
+  { itemId: 'honey-packets', trigger: { kind: 'activity', activity: 'river' }, qty: { kind: 'fixed', n: 2 } },
+  { itemId: 'honey-packets', trigger: { kind: 'environment', environment: 'cold-winter' }, qty: { kind: 'fixed', n: 2 } },
 
   // --- Tools: qty 1, never scaled (one forceps serves any group) ---
   { itemId: 'tweezers', trigger: { kind: 'core' }, qty: { kind: 'fixed', n: 1 } },
@@ -60,6 +73,8 @@ export const KIT_RULES: KitRule[] = [
   { itemId: 'duct-tape', trigger: { kind: 'person-days', min: 4 }, qty: { kind: 'ladder', steps: [{ upToPersonDays: 6, qty: 18 }, { qty: 26 }] } },
   // Documentation enters above ~7 person-days (T2 universal; cheap)
   { itemId: 'accident-form', trigger: { kind: 'person-days', min: 7 }, qty: { kind: 'fixed', n: 1 } },
+  // T2 ships a reference book at every tier ≥4 days
+  { itemId: 'reference-guide', trigger: { kind: 'duration', minDays: 4 }, qty: { kind: 'fixed', n: 1 }, cuttable: true },
   { itemId: 'tick-tool', trigger: { kind: 'environment', environment: 'ticks-insects' }, qty: { kind: 'fixed', n: 1 } },
   { itemId: 'sting-relief', trigger: { kind: 'environment', environment: 'ticks-insects' }, qty: { kind: 'fixed', n: 4 }, cuttable: true },
   // Vet wrap: river module (works wet) OR pets along
@@ -82,6 +97,16 @@ export const KIT_RULES: KitRule[] = [
   { itemId: 'pressure-bandage', trigger: { kind: 'remoteness', min: 'day-plus' }, qty: { kind: 'fixed', n: 1 } },
   // Snake country wants the pressure wrap regardless of remoteness
   { itemId: 'pressure-bandage', trigger: { kind: 'environment', environment: 'snake-country' }, qty: { kind: 'fixed', n: 1 } },
+  // Severity tier: deep remoteness AND wilderness training (taxonomy §6)
+  { itemId: 'chest-seals', trigger: { kind: 'remoteness', min: 'day-plus' }, alsoRequires: [{ kind: 'training', op: 'at-least', level: 'wfa-wfr' }], qty: { kind: 'fixed', n: 1 } },
+  // Contested item, comprehensive-only (Kellock 2026-07-04): T1 recommends
+  // carrying it, T3 improvises — "weight be damned" packers get the real one
+  { itemId: 'sam-splint', trigger: { kind: 'philosophy', is: 'comprehensive' }, qty: { kind: 'fixed', n: 1 } },
+  { itemId: 'finger-splint', trigger: { kind: 'person-days', min: 4 }, qty: { kind: 'fixed', n: 1 }, cuttable: true },
+  // Stationed kit: nothing frozen in a trunk (Red Cross / ANSI baseline)
+  { itemId: 'cold-pack', trigger: { kind: 'activity', activity: 'car' }, qty: { kind: 'fixed', n: 2 } },
+  // Kids answer produces an item, not just the pediatric-dosing flag (CDC)
+  { itemId: 'dosing-syringe', trigger: { kind: 'kids' }, qty: { kind: 'fixed', n: 1 } },
 ]
 
 // --- Prescription flags: consult-your-physician rows, never shopping rows.

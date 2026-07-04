@@ -106,6 +106,68 @@ export const ITEMS: Item[] = [
     retailer: 'Cortizone', purchaseUrl: buy('hydrocortisone 1% single use packets'),
     imageUrl: null, imageAlt: null,
   },
+  {
+    // T3 favorite; T1-consistent for low-tension wounds (taxonomy §1)
+    id: 'liquid-bandage', name: 'Liquid bandage',
+    application: 'Sealing small clean cuts and cracked fingertips; stays on wet hands.',
+    category: 'bandages', unit: 'tube', weightOz: 0.3, priceCents: 800,
+    retailer: 'New-Skin', purchaseUrl: buy('liquid bandage new skin'),
+    imageUrl: null, imageAlt: null,
+  },
+  {
+    // Taxonomy §5 lists cloth tape as CORE — missing from v0 seed
+    id: 'cloth-tape', name: 'Cloth medical tape, 1"',
+    application: 'Securing dressings; general splint and repair taping.',
+    category: 'bandages', unit: 'roll', weightOz: 0.9, priceCents: 400,
+    retailer: 'Durapore', purchaseUrl: buy('cloth medical tape 1 inch'),
+    imageUrl: null, imageAlt: null,
+  },
+  {
+    // Remote water quality (taxonomy §3)
+    id: 'povidone-iodine', name: 'Povidone-iodine wipes',
+    application: 'Antisepsis when clean water is uncertain; skin prep around wounds.',
+    category: 'bandages', unit: 'wipe', weightOz: 0.05, priceCents: 500,
+    retailer: 'Dynarex', purchaseUrl: buy('povidone iodine prep pads'),
+    imageUrl: null, imageAlt: null,
+  },
+  {
+    id: 'trauma-pad-5x9', name: 'Trauma pad, 5"×9"',
+    application: 'High-absorbency layer for heavily bleeding wounds.',
+    category: 'bandages', unit: 'pad', weightOz: 0.9, priceCents: 500,
+    retailer: 'Curad', purchaseUrl: buy('abd trauma pad 5x9'),
+    imageUrl: null, imageAlt: null,
+  },
+  {
+    id: 'trauma-pad-8x10', name: 'Trauma pad, 8"×10"',
+    application: 'Maximum-absorbency dressing for large wounds at group scale.',
+    category: 'bandages', unit: 'pad', weightOz: 1.6, priceCents: 700,
+    retailer: 'Dynarex', purchaseUrl: buy('abd trauma pad 8x10'),
+    imageUrl: null, imageAlt: null,
+  },
+  {
+    // Search-only (r/bicycletouring favorite; distinct device from strips)
+    id: 'zip-closure', name: 'Zip-type wound closure',
+    application: 'Non-invasive closure of longer lacerations; stronger hold than strips.',
+    category: 'bandages', unit: 'device', weightOz: 0.3, priceCents: 3000,
+    retailer: 'ZipStitch', purchaseUrl: buy('zipstitch wound closure'),
+    imageUrl: null, imageAlt: null,
+  },
+  {
+    // Search-only: the WFR-instructor alternative (no neomycin — allergy risk)
+    id: 'bacitracin', name: 'Bacitracin ointment, single-use',
+    application: 'Antibiotic ointment without neomycin — lower allergy risk.',
+    category: 'bandages', unit: 'packet', weightOz: 0.05, priceCents: 500,
+    retailer: 'any', purchaseUrl: buy('bacitracin ointment single use packets'),
+    imageUrl: null, imageAlt: null,
+  },
+  {
+    // Search-only (CDC: long-trip personal kit)
+    id: 'antifungal-cream', name: 'Antifungal cream, single-use',
+    application: "Athlete's foot and fungal rashes on long trips.",
+    category: 'bandages', unit: 'packet', weightOz: 0.05, priceCents: 600,
+    retailer: 'Lotrimin', purchaseUrl: buy('antifungal cream single use packets'),
+    imageUrl: null, imageAlt: null,
+  },
 
   // --- Blister & foot care ---
   {
@@ -121,6 +183,22 @@ export const ITEMS: Item[] = [
     application: 'Covering formed blisters to allow continued walking.',
     category: 'blister', unit: 'dressing', weightOz: 0.15, priceCents: 700,
     retailer: 'Compeed', purchaseUrl: buy('compeed blister cushions'),
+    imageUrl: null, imageAlt: null,
+  },
+  {
+    // Search-only: the T2 default; Leukotape is Phew's pick, this is the alternative
+    id: 'moleskin', name: 'Moleskin sheet',
+    application: 'Blister padding; the traditional alternative to tape.',
+    category: 'blister', unit: 'sheet', weightOz: 0.4, priceCents: 400,
+    retailer: "Dr. Scholl's", purchaseUrl: buy('moleskin blister sheet'),
+    imageUrl: null, imageAlt: null,
+  },
+  {
+    // Search-only (T3: adhesion prep)
+    id: 'benzoin', name: 'Tincture of benzoin swabs',
+    application: 'Adhesion prep so tape and dressings stick to sweaty skin.',
+    category: 'blister', unit: 'swab', weightOz: 0.05, priceCents: 700,
+    retailer: 'Dynarex', purchaseUrl: buy('tincture of benzoin swabsticks'),
     imageUrl: null, imageAlt: null,
   },
 
@@ -182,6 +260,62 @@ export const ITEMS: Item[] = [
     application: 'Motion sickness and nausea.',
     category: 'meds', unit: 'tablet', weightOz: 0.017, priceCents: 500,
     retailer: 'Bonine', purchaseUrl: buy('meclizine 25mg'),
+    imageUrl: null, imageAlt: null,
+  },
+  {
+    // Week-plus gut risk (taxonomy §7: antacid at week+ / gut-risk)
+    id: 'antacid', name: 'Antacid tablets',
+    application: 'Heartburn and indigestion.',
+    category: 'meds', unit: 'tablet', weightOz: 0.05, priceCents: 300,
+    retailer: 'Tums', purchaseUrl: buy('antacid tablets rolls'),
+    imageUrl: null, imageAlt: null,
+  },
+  {
+    // T3 river doctrine: hypothermia sugar
+    id: 'honey-packets', name: 'Honey packets',
+    application: 'Fast sugar for hypothermia and low blood sugar.',
+    category: 'meds', unit: 'packet', weightOz: 0.35, priceCents: 300,
+    retailer: 'any', purchaseUrl: buy('honey packets single serve'),
+    imageUrl: null, imageAlt: null,
+  },
+  {
+    // Search-only: ORS covers the hot-sun module; these are the exertion alternative
+    id: 'electrolyte-tablets', name: 'Electrolyte tablets',
+    application: 'Cramping and electrolyte replacement on sustained exertion.',
+    category: 'meds', unit: 'tablet', weightOz: 0.05, priceCents: 700,
+    retailer: 'Nuun', purchaseUrl: buy('electrolyte tablets nuun'),
+    imageUrl: null, imageAlt: null,
+  },
+  {
+    // Search-only
+    id: 'cold-flu', name: 'Cold & flu tablets',
+    application: 'Congestion, cough, sore throat.',
+    category: 'meds', unit: 'tablet', weightOz: 0.05, priceCents: 600,
+    retailer: 'DayQuil', purchaseUrl: buy('cold and flu tablets unit dose'),
+    imageUrl: null, imageAlt: null,
+  },
+  {
+    // Search-only: daytime antihistamine (diphenhydramine sedates)
+    id: 'loratadine', name: 'Loratadine 10 mg',
+    application: 'Non-drowsy antihistamine for daytime allergy coverage.',
+    category: 'meds', unit: 'tablet', weightOz: 0.017, priceCents: 500,
+    retailer: 'Claritin', purchaseUrl: buy('loratadine 10mg'),
+    imageUrl: null, imageAlt: null,
+  },
+  {
+    // Search-only (MyMedic med module; bikepacking community staple)
+    id: 'bismuth', name: 'Bismuth subsalicylate tablets',
+    application: 'Upset stomach, nausea, mild diarrhea.',
+    category: 'meds', unit: 'tablet', weightOz: 0.1, priceCents: 400,
+    retailer: 'Pepto-Bismol', purchaseUrl: buy('bismuth subsalicylate chewable tablets'),
+    imageUrl: null, imageAlt: null,
+  },
+  {
+    // Search-only (Red Cross / CDC general list)
+    id: 'throat-lozenges', name: 'Throat lozenges',
+    application: 'Sore throat and cough.',
+    category: 'meds', unit: 'lozenge', weightOz: 0.1, priceCents: 300,
+    retailer: 'Halls', purchaseUrl: buy('throat lozenges'),
     imageUrl: null, imageAlt: null,
   },
 
@@ -282,6 +416,79 @@ export const ITEMS: Item[] = [
     retailer: 'Tecnu', purchaseUrl: buy('tecnu poison oak ivy scrub packets'),
     imageUrl: null, imageAlt: null,
   },
+  {
+    // T2 ships a book at every tier ≥4 days; Red Cross puts the manual in core
+    id: 'reference-guide', name: 'Wilderness first-aid field guide',
+    application: 'Step-by-step reference when memory fails under stress.',
+    category: 'tools', unit: 'book', weightOz: 2.4, priceCents: 1000,
+    retailer: 'NOLS', purchaseUrl: buy('NOLS wilderness medicine field guide'),
+    imageUrl: null, imageAlt: null,
+  },
+  {
+    // Search-only: gear line (Kellock 2026-07-04 — prevention gear stays out of auto-kits)
+    id: 'repellent', name: 'Insect repellent, picaridin',
+    application: 'Bite prevention; mosquitoes and ticks.',
+    category: 'tools', unit: 'bottle', weightOz: 1.0, priceCents: 800,
+    retailer: 'Sawyer', purchaseUrl: buy('picaridin insect repellent sawyer'),
+    imageUrl: null, imageAlt: null,
+  },
+  {
+    // Search-only: gear line
+    id: 'headlamp', name: 'Micro headlamp',
+    application: 'Hands-free light for treatment after dark.',
+    category: 'tools', unit: 'lamp', weightOz: 1.2, priceCents: 2000,
+    retailer: 'Nitecore', purchaseUrl: buy('micro headlamp nitecore'),
+    imageUrl: null, imageAlt: null,
+  },
+  {
+    // Search-only: gear line
+    id: 'thermometer', name: 'Digital thermometer',
+    application: 'Fever confirmation and trend tracking on long trips.',
+    category: 'tools', unit: 'unit', weightOz: 0.5, priceCents: 800,
+    retailer: 'Vicks', purchaseUrl: buy('compact digital thermometer'),
+    imageUrl: null, imageAlt: null,
+  },
+  {
+    // Search-only: gear line
+    id: 'pulse-oximeter', name: 'Pulse oximeter',
+    application: 'Blood-oxygen check at sleeping altitude.',
+    category: 'tools', unit: 'unit', weightOz: 1.8, priceCents: 2500,
+    retailer: 'Zacurate', purchaseUrl: buy('fingertip pulse oximeter'),
+    imageUrl: null, imageAlt: null,
+  },
+  {
+    // Stationed-kit staple (Red Cross home baseline, ANSI Class A, NOLS
+    // sprain module) — car rule; search-only elsewhere (nothing frozen in a trunk)
+    id: 'cold-pack', name: 'Instant cold pack',
+    application: 'Cold therapy for sprains and strains where nothing is frozen.',
+    category: 'tools', unit: 'pack', weightOz: 4.0, priceCents: 300,
+    retailer: 'Dynarex', purchaseUrl: buy('instant cold pack single use'),
+    imageUrl: null, imageAlt: null,
+  },
+  {
+    // CDC pediatric handling — the kids answer produces an item, not just a flag
+    id: 'dosing-syringe', name: 'Medicine dosing syringe',
+    application: 'Accurate liquid-medication dosing for children.',
+    category: 'tools', unit: 'syringe', weightOz: 0.2, priceCents: 300,
+    retailer: 'any', purchaseUrl: buy('oral medicine dosing syringe'),
+    imageUrl: null, imageAlt: null,
+  },
+  {
+    // Search-only (Red Cross tools list; hygiene before treatment)
+    id: 'hand-sanitizer', name: 'Hand sanitizer, mini',
+    application: "Hand hygiene before wound care when washing isn't possible.",
+    category: 'tools', unit: 'bottle', weightOz: 1.0, priceCents: 200,
+    retailer: 'Purell', purchaseUrl: buy('mini hand sanitizer'),
+    imageUrl: null, imageAlt: null,
+  },
+  {
+    // Search-only (overlanding doctrine: mark tourniquet time)
+    id: 'mini-marker', name: 'Permanent mini marker',
+    application: 'Marking tourniquet time; labeling doses and notes.',
+    category: 'tools', unit: 'marker', weightOz: 0.3, priceCents: 300,
+    retailer: 'Sharpie', purchaseUrl: buy('sharpie mini permanent marker'),
+    imageUrl: null, imageAlt: null,
+  },
 
   // --- Trauma layer (always offered per Kellock 2026-07-03; copy gated by training) ---
   {
@@ -312,6 +519,31 @@ export const ITEMS: Item[] = [
     application: 'Direct-pressure dressing for heavy bleeding; snake-bite pressure wrap.',
     category: 'trauma', unit: 'bandage', weightOz: 2.6, priceCents: 900,
     retailer: 'Israeli Bandage', purchaseUrl: buy('israeli compression bandage 4 inch'),
+    imageUrl: null, imageAlt: null,
+  },
+  {
+    // Severity tier (taxonomy §6): deep remoteness + wilderness training
+    id: 'chest-seals', name: 'Vented chest seals, pair',
+    application: 'Sealing penetrating chest wounds.',
+    category: 'trauma', unit: 'pair', weightOz: 1.5, priceCents: 1600,
+    retailer: 'Hyfin', purchaseUrl: buy('hyfin vented chest seal twin pack'),
+    imageUrl: null, imageAlt: null,
+  },
+  {
+    // Contested (T1 recommends, T3 improvises) — comprehensive-only per Kellock
+    // 2026-07-04; also the seed of a future "worth considering" section
+    id: 'sam-splint', name: 'SAM splint, 36"',
+    application: 'Moldable splint for limb fractures and sprains.',
+    category: 'trauma', unit: 'splint', weightOz: 4.0, priceCents: 1400,
+    retailer: 'SAM Medical', purchaseUrl: buy('sam splint 36'),
+    imageUrl: null, imageAlt: null,
+  },
+  {
+    // Mid-tier commercial staple (AMK Backpacker/Marine, MyMedic Standard)
+    id: 'finger-splint', name: 'Finger splint',
+    application: 'Immobilizing jammed and fractured fingers.',
+    category: 'trauma', unit: 'splint', weightOz: 0.4, priceCents: 500,
+    retailer: 'any', purchaseUrl: buy('foam aluminum finger splint'),
     imageUrl: null, imageAlt: null,
   },
 ]

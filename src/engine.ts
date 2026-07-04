@@ -52,6 +52,8 @@ function fires(t: Trigger, a: WizardAnswers): boolean {
       const ref = TRAINING_LEVELS.indexOf(t.level)
       return t.op === 'at-least' ? idx >= ref : idx <= ref
     }
+    case 'philosophy':
+      return a.philosophy === t.is
   }
 }
 
@@ -90,7 +92,12 @@ interface FiredEntry {
 
 const CATALOG_INDEX = new Map(ITEMS.map((item, i) => [item.id, i]))
 
-function fireEntries(a: WizardAnswers, philosophy: Philosophy): FiredEntry[] {
+function fireEntries(base: WizardAnswers, philosophy: Philosophy): FiredEntry[] {
+  // The philosophy parameter overrides the answer everywhere — including the
+  // philosophy TRIGGER, so a hypothetical ultralight rebuild also drops
+  // comprehensive-only items (SAM splint). The savings figure stays honest.
+  const a: WizardAnswers = { ...base, philosophy }
+
   // 1. Evaluate every rule; merge firing rules by item. An item entering
   //    through several rules (aspirin: multi-day OR 60+) becomes one row:
   //    max quantity, all rules kept (chips union), cuttable only if unanimous.
