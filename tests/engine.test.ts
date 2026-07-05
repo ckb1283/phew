@@ -61,7 +61,7 @@ test('golden fixture: the 03-results mock scenario, plus the v0.3 research addit
     { kind: 'environment', value: 'hot-sun', label: 'hot & sun' },
   ])
   assert.deepEqual(findItem(kit, 'leukotape')?.chips, [
-    { kind: 'activity', value: 'backpacking', label: 'hiking & backpacking' },
+    { kind: 'activity', value: 'backpacking', label: 'backpacking' },
   ])
   assert.equal(findItem(kit, 'aspirin')?.chips.length, 0) // duration triggers don't chip
 

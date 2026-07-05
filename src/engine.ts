@@ -156,9 +156,9 @@ const entriesWeightOz = (entries: FiredEntry[]) =>
 // stable identity; label is presentation.
 
 const ACTIVITY_LABEL: Record<Activity, string> = {
-  backpacking: 'hiking & backpacking',
-  kayaking: 'kayaking', rafting: 'rafting', canoeing: 'canoeing',
-  'road-cycling': 'road cycling', bikepacking: 'bikepacking', car: 'car',
+  backpacking: 'backpacking',
+  kayaking: 'kayaking', rafting: 'rafting',
+  'cycle-touring': 'cycle touring', car: 'car',
 }
 const FAMILY_LABEL: Record<ActivityFamily, string> = {
   foot: 'on foot', water: 'paddling', wheel: 'cycling', vehicle: 'car kit',
@@ -191,8 +191,7 @@ function defaultName(a: WizardAnswers): string {
   const dur = a.days <= 1 ? 'Day-Trip' : a.days <= 3 ? 'Weekend' : a.days <= 7 ? 'Weekend-Plus' : 'Expedition'
   const noun: Record<Exclude<Activity, 'car'>, string> = {
     backpacking: 'Backpacker',
-    kayaking: 'Kayaker', rafting: 'Rafter', canoeing: 'Canoeist',
-    'road-cycling': 'Rider', bikepacking: 'Bikepacker',
+    kayaking: 'Kayaker', rafting: 'Rafter', 'cycle-touring': 'Cyclist',
   }
   return `The ${dur} ${noun[a.activity]}`
 }

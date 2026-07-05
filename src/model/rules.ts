@@ -294,18 +294,8 @@ export const BAG_RULES: BagRule[] = [
     preselect: { ultralight: 'dry-pouch', balanced: 'dry-pouch', comprehensive: 'ammo-can' },
   },
   {
-    activity: 'canoeing',
-    optionIds: ['own-bag', 'ziplock', 'dry-pouch', 'ammo-can'],
-    preselect: { ultralight: 'dry-pouch', balanced: 'dry-pouch', comprehensive: 'ammo-can' },
-  },
-  {
-    activity: 'road-cycling',
-    optionIds: ['own-bag', 'ziplock', 'ul-zip-sack', 'frame-bag'],
-    preselect: { ultralight: 'ziplock', balanced: 'frame-bag', comprehensive: 'frame-bag' },
-  },
-  {
-    // Bikepacking: multi-day, so a waterproof option belongs alongside the frame bag
-    activity: 'bikepacking',
+    // Cycle touring: multi-day, so a waterproof option belongs alongside the frame bag
+    activity: 'cycle-touring',
     optionIds: ['own-bag', 'ziplock', 'frame-bag', 'dry-pouch'],
     preselect: { ultralight: 'ziplock', balanced: 'frame-bag', comprehensive: 'dry-pouch' },
   },

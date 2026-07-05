@@ -42,13 +42,11 @@ const carIcon = (
 )
 
 export const ACTIVITY_OPTIONS: CardOption<Activity>[] = [
-  { value: 'backpacking', title: 'Hiking & backpacking', desc: 'Trail miles on foot — blisters and weight matter', icon: footIcon },
-  { value: 'kayaking', title: 'Kayaking', desc: 'Day paddling — the kit rides in a dry bag', icon: paddleIcon },
-  { value: 'rafting', title: 'Rafting', desc: 'Multi-day on the river — gear straps to the frame', icon: paddleIcon },
-  { value: 'canoeing', title: 'Canoeing', desc: 'Flatwater and rivers — dry bags and portages', icon: paddleIcon },
-  { value: 'road-cycling', title: 'Road cycling', desc: 'Road miles — road rash, compact and light', icon: bikeIcon },
-  { value: 'bikepacking', title: 'Bikepacking', desc: 'Loaded touring — multi-day, self-supported', icon: bikeIcon },
-  { value: 'car', title: 'Car kit', desc: 'Lives in the trunk — weight is no object', icon: carIcon },
+  { value: 'backpacking', title: 'Backpacking', icon: footIcon },
+  { value: 'kayaking', title: 'Kayaking', icon: paddleIcon },
+  { value: 'rafting', title: 'Rafting', icon: paddleIcon },
+  { value: 'cycle-touring', title: 'Cycle touring', icon: bikeIcon },
+  { value: 'car', title: 'Car kit', icon: carIcon },
 ]
 
 export type DurationBucket = 'day' | '2-3' | '4-7' | 'week-plus'

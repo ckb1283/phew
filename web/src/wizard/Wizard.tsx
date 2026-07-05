@@ -98,9 +98,10 @@ function OptionCards<V extends string>(props: {
   options: CardOption<V>[]
   selected: V | null
   onPick: (value: V) => void
+  grid?: boolean
 }) {
   return (
-    <div className="qa-options">
+    <div className={`qa-options${props.grid ? ' grid-2' : ''}`}>
       {props.options.map((o) => (
         <button
           key={o.value}
@@ -221,7 +222,7 @@ export default function Wizard(props: {
       <QaShell index={0} label="Activity" summary={summaries[0]} active={active === 0} onReopen={reopen(0)}>
         <h2 className="qa-question">What's this kit for?</h2>
         <p className="qa-help">Different adventures break people in different ways.</p>
-        <OptionCards options={ACTIVITY_OPTIONS} selected={v.activity} onPick={(a) => commit({ activity: a })} />
+        <OptionCards options={ACTIVITY_OPTIONS} grid selected={v.activity} onPick={(a) => commit({ activity: a })} />
       </QaShell>
 
       <QaShell index={1} label="Your people" summary={summaries[1]} active={active === 1} onReopen={reopen(1)}>
