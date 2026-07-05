@@ -244,8 +244,12 @@ export default function Wizard(props: {
       </QaShell>
 
       <QaShell index={2} label="Duration" summary={summaries[2]} active={active === 2} onReopen={reopen(2)}>
-        <h2 className="qa-question">How long are you out?</h2>
-        <p className="qa-help">Longer trips need more doses and broader medication coverage.</p>
+        <h2 className="qa-question">{v.activity === 'car' ? 'How long are your typical outings?' : 'How long are you out?'}</h2>
+        <p className="qa-help">
+          {v.activity === 'car'
+            ? 'A trunk kit is stocked like a well-provisioned trip no matter the answer — pick whatever fits.'
+            : 'Longer trips need more doses and broader medication coverage.'}
+        </p>
         <div className="qa-options">
           {DURATION_OPTIONS.map((o) => (
             <button

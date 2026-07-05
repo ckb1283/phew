@@ -180,7 +180,7 @@ export const ITEMS: Item[] = [
   },
   {
     id: 'hydrogel-dressings', name: 'Hydrogel blister dressings',
-    application: 'Covering formed blisters to allow continued walking.',
+    application: 'Covering formed blisters to keep moving.',
     category: 'blister', unit: 'dressing', weightOz: 0.15, priceCents: 700,
     retailer: 'Compeed', purchaseUrl: buy('compeed blister cushions'),
     imageUrl: null, imageAlt: null,
@@ -218,6 +218,22 @@ export const ITEMS: Item[] = [
     imageUrl: null, imageAlt: null,
   },
   {
+    // Kids get their own liquid formulations — the dosing syringe now has something to
+    // dose. Weight-based dosing still routes to the pediatric-dosing flag.
+    id: 'childrens-acetaminophen', name: "Children's acetaminophen, liquid",
+    application: 'Fever and pain in children; dose by weight — see the pediatric-dosing note.',
+    category: 'meds', unit: 'bottle', weightOz: 4.5, priceCents: 800,
+    retailer: "Children's Tylenol", purchaseUrl: buy("children's acetaminophen liquid"),
+    imageUrl: null, imageAlt: null,
+  },
+  {
+    id: 'childrens-ibuprofen', name: "Children's ibuprofen, liquid",
+    application: 'Fever, pain, and inflammation in children over 6 months; dose by weight.',
+    category: 'meds', unit: 'bottle', weightOz: 4.5, priceCents: 900,
+    retailer: "Children's Motrin", purchaseUrl: buy("children's ibuprofen liquid"),
+    imageUrl: null, imageAlt: null,
+  },
+  {
     id: 'diphenhydramine', name: 'Diphenhydramine 25 mg',
     application: 'Allergic reactions; sting and bite swelling.',
     category: 'meds', unit: 'tablet', weightOz: 0.017, priceCents: 400,
@@ -243,7 +259,7 @@ export const ITEMS: Item[] = [
   {
     id: 'ors', name: 'Oral rehydration salts',
     application: 'Dehydration and heat exhaustion.',
-    category: 'meds', unit: 'packet', weightOz: 0.2, priceCents: 800,
+    category: 'meds', unit: 'packet', weightOz: 0.55, priceCents: 800,
     retailer: 'Liquid I.V.', purchaseUrl: buy('oral rehydration salts packets'),
     imageUrl: null, imageAlt: null,
   },
@@ -351,7 +367,7 @@ export const ITEMS: Item[] = [
   {
     // The item T3 says everyone forgets
     id: 'nitrile-gloves', name: 'Nitrile gloves',
-    application: 'Barrier protection when treating others.',
+    application: 'Barrier protection when treating wounds.',
     category: 'tools', unit: 'pair', weightOz: 0.2, priceCents: 300,
     retailer: 'REI', purchaseUrl: buy('nitrile gloves pairs first aid'),
     imageUrl: null, imageAlt: null,
@@ -380,7 +396,7 @@ export const ITEMS: Item[] = [
   {
     // River module: works wet (T2); also the pet sub-module's anchor item
     id: 'vet-wrap', name: 'Self-adherent wrap, 2"',
-    application: 'Securing dressings in wet conditions; pet-safe wrap.',
+    application: 'Securing dressings in wet conditions; flexible self-adherent wrap.',
     category: 'tools', unit: 'roll', weightOz: 1.0, priceCents: 500,
     retailer: 'Coban', purchaseUrl: buy('self adherent wrap 2 inch vet wrap'),
     imageUrl: null, imageAlt: null,
@@ -412,7 +428,7 @@ export const ITEMS: Item[] = [
     // Poison oak/ivy module
     id: 'tecnu', name: 'Poison oak & ivy scrub, single-use',
     application: 'Removing urushiol oil after contact, before the rash sets.',
-    category: 'tools', unit: 'packet', weightOz: 0.3, priceCents: 800,
+    category: 'tools', unit: 'packet', weightOz: 0.4, priceCents: 800,
     retailer: 'Tecnu', purchaseUrl: buy('tecnu poison oak ivy scrub packets'),
     imageUrl: null, imageAlt: null,
   },
@@ -496,7 +512,7 @@ export const ITEMS: Item[] = [
     // SWAT-T over CAT for v0: multi-use, no counterfeit problem (T3 warning).
     id: 'tourniquet', name: 'SWAT-T tourniquet',
     application: 'Life-threatening limb bleeding.',
-    category: 'trauma', unit: 'tourniquet', weightOz: 2.4, priceCents: 1200,
+    category: 'trauma', unit: 'tourniquet', weightOz: 4.0, priceCents: 1200,
     retailer: 'SWAT-T', purchaseUrl: buy('swat-t tourniquet'),
     imageUrl: null, imageAlt: null,
   },
@@ -516,7 +532,7 @@ export const ITEMS: Item[] = [
   },
   {
     id: 'pressure-bandage', name: 'Compression trauma bandage, 4"',
-    application: 'Direct-pressure dressing for heavy bleeding; snake-bite pressure wrap.',
+    application: 'Direct-pressure dressing for heavy or arterial bleeding.',
     category: 'trauma', unit: 'bandage', weightOz: 2.6, priceCents: 900,
     retailer: 'Israeli Bandage', purchaseUrl: buy('israeli compression bandage 4 inch'),
     imageUrl: null, imageAlt: null,
@@ -542,7 +558,8 @@ export const ITEMS: Item[] = [
     // Mid-tier commercial staple (AMK Backpacker/Marine, MyMedic Standard)
     id: 'finger-splint', name: 'Finger splint',
     application: 'Immobilizing jammed and fractured fingers.',
-    category: 'trauma', unit: 'splint', weightOz: 0.4, priceCents: 500,
+    // Tools, not the training-gated Trauma layer — splinting a finger needs no training.
+    category: 'tools', unit: 'splint', weightOz: 0.4, priceCents: 500,
     retailer: 'any', purchaseUrl: buy('foam aluminum finger splint'),
     imageUrl: null, imageAlt: null,
   },

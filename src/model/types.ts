@@ -12,8 +12,27 @@
 // Every enum is a single `as const` array with its type derived from it —
 // validate.ts and the engine import THESE, never re-declare. A value added
 // here is automatically accepted at the API boundary.
-export const ACTIVITIES = ['backpacking', 'river', 'cycling', 'car'] as const
+// Explicit activities users recognize. Each belongs to a FAMILY that shares a
+// medical module (kayaking/rafting/canoeing → water), so rules target the family
+// while bag options and copy stay per-activity — a kayaker never sees an ammo can.
+// New families (vertical for climbing, hunt) arrive with their research lanes.
+export const ACTIVITIES = [
+  'backpacking', 'kayaking', 'rafting', 'canoeing', 'road-cycling', 'bikepacking', 'car',
+] as const
 export type Activity = (typeof ACTIVITIES)[number]
+
+export const ACTIVITY_FAMILIES = ['foot', 'water', 'wheel', 'vehicle'] as const
+export type ActivityFamily = (typeof ACTIVITY_FAMILIES)[number]
+
+export const ACTIVITY_FAMILY: Record<Activity, ActivityFamily> = {
+  backpacking: 'foot',
+  kayaking: 'water',
+  rafting: 'water',
+  canoeing: 'water',
+  'road-cycling': 'wheel',
+  bikepacking: 'wheel',
+  car: 'vehicle',
+}
 
 // Ordered least→most remote; rules compare by position in this list.
 export const HOURS_TO_CARE = ['under-1', 'few', '12-plus', 'day-plus'] as const
@@ -114,7 +133,8 @@ export interface SectionMeta {
 
 export type Trigger =
   | { kind: 'core' } // unconditional
-  | { kind: 'activity'; activity: Activity }
+  | { kind: 'activity'; activity: Activity } // one specific activity
+  | { kind: 'activityFamily'; family: ActivityFamily } // a shared module (water, foot, wheel, vehicle)
   | { kind: 'environment'; environment: Environment }
   | { kind: 'condition'; condition: Condition }
   | { kind: 'remoteness'; min: HoursToCare }

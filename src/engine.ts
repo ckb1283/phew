@@ -5,9 +5,11 @@
 import { CONTAINER_BY_ID, ITEM_BY_ID, ITEMS } from './model/catalog.js'
 import { BAG_RULES, FLAG_RULES, KIT_RULES, NUDGE_RULES, PHILOSOPHY, SECTIONS } from './model/rules.js'
 import {
+  ACTIVITY_FAMILY,
   HOURS_TO_CARE,
   TRAINING_LEVELS,
   type Activity,
+  type ActivityFamily,
   type Category,
   type Condition,
   type Environment,
@@ -30,6 +32,8 @@ function fires(t: Trigger, a: WizardAnswers): boolean {
       return true
     case 'activity':
       return a.activity === t.activity
+    case 'activityFamily':
+      return ACTIVITY_FAMILY[a.activity] === t.family
     case 'environment':
       return a.environments.includes(t.environment)
     case 'condition':
@@ -92,11 +96,21 @@ interface FiredEntry {
 
 const CATALOG_INDEX = new Map(ITEMS.map((item, i) => [item.id, i]))
 
+// A car kit is STATIONED, not a trip (taxonomy §13): it doesn't scale by one outing's
+// length — it's stocked like a well-provisioned multi-day kit and managed by expiry,
+// not weight. Pin its effective trip length here so days/duration/person-days logic
+// treats it as generously provisioned regardless of the duration answered.
+const STATIONED_DAYS = 14
+
 function fireEntries(base: WizardAnswers, philosophy: Philosophy): FiredEntry[] {
   // The philosophy parameter overrides the answer everywhere — including the
   // philosophy TRIGGER, so a hypothetical ultralight rebuild also drops
   // comprehensive-only items (SAM splint). The savings figure stays honest.
-  const a: WizardAnswers = { ...base, philosophy }
+  const a: WizardAnswers = {
+    ...base,
+    philosophy,
+    days: base.activity === 'car' ? STATIONED_DAYS : base.days,
+  }
 
   // 1. Evaluate every rule; merge firing rules by item. An item entering
   //    through several rules (aspirin: multi-day OR 60+) becomes one row:
@@ -122,7 +136,8 @@ function fireEntries(base: WizardAnswers, philosophy: Philosophy): FiredEntry[] 
     if (philosophy === 'comprehensive' && entry.scalable) {
       entry.qty = Math.ceil(entry.qty * PHILOSOPHY.comprehensiveScale)
     }
-    if (philosophy === 'ultralight' && entry.rules.every((r) => r.cuttable)) continue
+    // Ultralight never trims a car kit — a trunk has no weight budget (taxonomy §13).
+    if (philosophy === 'ultralight' && a.activity !== 'car' && entry.rules.every((r) => r.cuttable)) continue
     const item = ITEM_BY_ID.get(itemId)
     if (!item) throw new Error(`rule references unknown item: ${itemId}`) // integrity backstop
     entries.push({ item, qty: entry.qty, rules: entry.rules })
@@ -141,7 +156,12 @@ const entriesWeightOz = (entries: FiredEntry[]) =>
 // stable identity; label is presentation.
 
 const ACTIVITY_LABEL: Record<Activity, string> = {
-  backpacking: 'backpacking', river: 'river & paddling', cycling: 'cycling', car: 'car',
+  backpacking: 'hiking & backpacking',
+  kayaking: 'kayaking', rafting: 'rafting', canoeing: 'canoeing',
+  'road-cycling': 'road cycling', bikepacking: 'bikepacking', car: 'car',
+}
+const FAMILY_LABEL: Record<ActivityFamily, string> = {
+  foot: 'on foot', water: 'paddling', wheel: 'cycling', vehicle: 'car kit',
 }
 const ENVIRONMENT_LABEL: Record<Environment, string> = {
   'high-altitude': 'altitude', 'hot-sun': 'hot & sun', 'cold-winter': 'cold',
@@ -155,6 +175,7 @@ const CONDITION_LABEL: Record<Condition, string> = {
 function chip(t: Trigger): KitChip | null {
   switch (t.kind) {
     case 'activity': return { kind: 'activity', value: t.activity, label: ACTIVITY_LABEL[t.activity] }
+    case 'activityFamily': return { kind: 'activity', value: t.family, label: FAMILY_LABEL[t.family] }
     case 'environment': return { kind: 'environment', value: t.environment, label: ENVIRONMENT_LABEL[t.environment] }
     case 'condition': return { kind: 'condition', value: t.condition, label: CONDITION_LABEL[t.condition] }
     case 'kids': return { kind: 'kids', value: 'kids', label: 'kids' }
@@ -169,7 +190,9 @@ function defaultName(a: WizardAnswers): string {
   if (a.activity === 'car') return 'The Car Kit'
   const dur = a.days <= 1 ? 'Day-Trip' : a.days <= 3 ? 'Weekend' : a.days <= 7 ? 'Weekend-Plus' : 'Expedition'
   const noun: Record<Exclude<Activity, 'car'>, string> = {
-    backpacking: 'Backpacker', river: 'Paddler', cycling: 'Rider',
+    backpacking: 'Backpacker',
+    kayaking: 'Kayaker', rafting: 'Rafter', canoeing: 'Canoeist',
+    'road-cycling': 'Rider', bikepacking: 'Bikepacker',
   }
   return `The ${dur} ${noun[a.activity]}`
 }
@@ -224,10 +247,13 @@ export function buildKit(a: WizardAnswers): Kit {
   const flags = FLAG_RULES.filter((f) => ruleFires(f, a)).map(({ id, name, why }) => ({ id, name, why }))
   const nudges = NUDGE_RULES.filter((n) => ruleFires(n, a)).map(({ id, title, desc }) => ({ id, title, desc }))
 
-  // Bag options.
+  // Bag options. Wet environments (open water, tropical humidity) prefer a waterproof
+  // dry pouch over the activity's default, when that activity offers one.
   const bagRule = BAG_RULES.find((b) => b.activity === a.activity)
   if (!bagRule) throw new Error(`no bag rule for activity: ${a.activity}`) // integrity backstop
-  const preselectId = bagRule.preselect[a.philosophy]
+  const wet = a.environments.includes('open-water') || a.environments.includes('tropical-humid')
+  const preselectId =
+    wet && bagRule.optionIds.includes('dry-pouch') ? 'dry-pouch' : bagRule.preselect[a.philosophy]
   const bagOptions = bagRule.optionIds.map((id) => ({ ...CONTAINER_BY_ID.get(id)!, preselected: id === preselectId }))
 
   // Stats. Cost counts each row's retail listing once — qty tells you how many
@@ -235,8 +261,9 @@ export function buildKit(a: WizardAnswers): Kit {
   // difference between this kit and the same answers rebuilt as ultralight.
   const totalWeightOz = Math.round(entriesWeightOz(entries) * 10) / 10
   const estCostCents = rows.reduce((s, r) => s + r.priceCents, 0)
+  // No weight-cut story for a stationed car kit — weight is no object by design.
   const ultralightSavingsOz =
-    a.philosophy === 'ultralight'
+    a.philosophy === 'ultralight' || a.activity === 'car'
       ? null
       : Math.round((entriesWeightOz(entries) - entriesWeightOz(fireEntries(a, 'ultralight'))) * 10) / 10
 

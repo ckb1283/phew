@@ -37,8 +37,9 @@ test('golden fixture: the 03-results mock scenario, plus the v0.3 research addit
   // 6 research-mandated rows to this scenario (content decision, research >
   // mock parity): liquid bandage + cloth tape (core), povidone-iodine (12+ hrs),
   // trauma pad 5×9 + finger splint (≥4 person-days), reference guide (≥4 days).
-  assert.equal(kit.stats.itemCount, 36)
-  for (const id of ['liquid-bandage', 'cloth-tape', 'povidone-iodine', 'trauma-pad-5x9', 'finger-splint', 'reference-guide']) {
+  // 37 since 2026-07-04 triage promoted hydrocortisone 1% to a core topical (all lanes).
+  assert.equal(kit.stats.itemCount, 37)
+  for (const id of ['liquid-bandage', 'cloth-tape', 'povidone-iodine', 'trauma-pad-5x9', 'finger-splint', 'reference-guide', 'hydrocortisone']) {
     assert.ok(findItem(kit, id), `${id} should enter the golden scenario`)
   }
   assert.equal(findItem(kit, 'povidone-iodine')?.qty, 4)
@@ -60,12 +61,14 @@ test('golden fixture: the 03-results mock scenario, plus the v0.3 research addit
     { kind: 'environment', value: 'hot-sun', label: 'hot & sun' },
   ])
   assert.deepEqual(findItem(kit, 'leukotape')?.chips, [
-    { kind: 'activity', value: 'backpacking', label: 'backpacking' },
+    { kind: 'activity', value: 'backpacking', label: 'hiking & backpacking' },
   ])
   assert.equal(findItem(kit, 'aspirin')?.chips.length, 0) // duration triggers don't chip
 
-  assert.deepEqual(kit.flags.map((f) => f.id), ['personal-rx', 'abx-course', 'doxycycline'])
-  assert.deepEqual(kit.nudges.map((n) => n.id), ['keep-cert-current', 'satellite', 'group-medical'])
+  // abx-course now requires week+ (was 5 days); the 5-day golden trip correctly drops it.
+  assert.deepEqual(kit.flags.map((f) => f.id), ['personal-rx', 'doxycycline'])
+  // permethrin nudge added 2026-07-04 (ticks-insects environment, present in golden)
+  assert.deepEqual(kit.nudges.map((n) => n.id), ['keep-cert-current', 'satellite', 'group-medical', 'permethrin'])
 
   // WFA training → trained trauma copy; organizer pouch preselected for balanced
   assert.equal(kit.sections.find((s) => s.category === 'trauma')?.note, 'requires training to use')
@@ -158,12 +161,13 @@ test('chest seals need deep remoteness AND wilderness training', () => {
 test('search-only items are in the catalog but never auto-enter a kit', () => {
   const SEARCH_ONLY = [
     'moleskin', 'benzoin', 'electrolyte-tablets', 'cold-flu', 'repellent', 'headlamp',
-    'thermometer', 'pulse-oximeter', 'zip-closure', 'bacitracin', 'antifungal-cream',
+    'thermometer', 'pulse-oximeter', 'zip-closure', 'bacitracin',
     'loratadine', 'bismuth', 'throat-lozenges', 'hand-sanitizer', 'mini-marker',
+    // antifungal-cream promoted to auto-enter on tropical-humid (2026-07-04 triage)
   ]
   // A maximal scenario: every module and tier that can fire, fires
   const maximal = buildKit({
-    activity: 'river', people: 8, kids: true, pets: true, days: 30,
+    activity: 'rafting', people: 8, kids: true, pets: true, days: 30,
     hoursToCare: 'day-plus',
     conditions: { kind: 'known', conditions: ['severe-allergies', 'adults-60-plus', 'daily-rx-meds'] },
     environments: ['high-altitude', 'hot-sun', 'cold-winter', 'tropical-humid', 'ticks-insects', 'snake-country', 'poison-oak-ivy', 'open-water', 'wildfire-smoke'],

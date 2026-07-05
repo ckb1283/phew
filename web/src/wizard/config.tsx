@@ -11,54 +11,44 @@ export interface CardOption<V extends string> {
   icon?: ReactNode
 }
 
+// Icon glyphs, factored so activities in a family can share one (water → paddle,
+// wheel → bike). Visual refinement is a later design pass.
+const footIcon = (
+  <svg className="option-icon-svg" viewBox="0 0 24 24" aria-hidden="true">
+    <path className="ico-fill" d="M3 16.5h18V19H3z" />
+    <path className="ico-line" d="M4 16.5V8c0-.8.7-1.3 1.5-1.3H9l1.6 3.2h4.9c2.6 0 4.6 1.6 5.5 3.8v2.8M4 16.5h17M8 6.7V5.2" />
+  </svg>
+)
+const paddleIcon = (
+  <svg className="option-icon-svg" viewBox="0 0 24 24" aria-hidden="true">
+    <ellipse className="ico-fill" cx="12" cy="17.5" rx="3" ry="4.5" />
+    <path className="ico-line" d="M12 3.5V13M9.5 3.5h5M12 13c-1.7 0-3 2-3 4.5S10.3 22 12 22s3-2 3-4.5-1.3-4.5-3-4.5z" />
+  </svg>
+)
+const bikeIcon = (
+  <svg className="option-icon-svg" viewBox="0 0 24 24" aria-hidden="true">
+    <circle className="ico-fill" cx="5.5" cy="16.5" r="1.4" />
+    <circle className="ico-fill" cx="18.5" cy="16.5" r="1.4" />
+    <path className="ico-line" d="M5.5 16.5a4 4 0 1 0 0 .01M18.5 16.5a4 4 0 1 0 0 .01M5.5 16.5 9.5 9h5.2M9.5 9l4.3 7.5M14.7 9l3.8 7.5M13.5 6.8h2.6M8.3 6.8h2.4" />
+  </svg>
+)
+const carIcon = (
+  <svg className="option-icon-svg" viewBox="0 0 24 24" aria-hidden="true">
+    <path className="ico-fill" d="M7 9.8 5.8 12.5h5.4V9.8z" />
+    <path className="ico-line" d="M3 16.5v-2.7c0-.6.4-1 1-1l1.5-3.4c.3-.7 1-1.1 1.8-1.1h7c.8 0 1.5.4 2 1l2.2 3.5h1.5c.6 0 1 .4 1 1v2.7M3 16.5h3M9 16.5h6M19 16.5h2" />
+    <circle className="ico-line" cx="7.5" cy="16.5" r="1.8" />
+    <circle className="ico-line" cx="17" cy="16.5" r="1.8" />
+  </svg>
+)
+
 export const ACTIVITY_OPTIONS: CardOption<Activity>[] = [
-  {
-    value: 'backpacking',
-    title: 'Backpacking & hiking',
-    desc: 'Trail miles on foot — blisters, weight matters',
-    icon: (
-      <svg className="option-icon-svg" viewBox="0 0 24 24" aria-hidden="true">
-        <path className="ico-fill" d="M3 16.5h18V19H3z" />
-        <path className="ico-line" d="M4 16.5V8c0-.8.7-1.3 1.5-1.3H9l1.6 3.2h4.9c2.6 0 4.6 1.6 5.5 3.8v2.8M4 16.5h17M8 6.7V5.2" />
-      </svg>
-    ),
-  },
-  {
-    value: 'river',
-    title: 'River & paddling',
-    desc: 'Kit rides in a waterproof case — think ammo can',
-    icon: (
-      <svg className="option-icon-svg" viewBox="0 0 24 24" aria-hidden="true">
-        <ellipse className="ico-fill" cx="12" cy="17.5" rx="3" ry="4.5" />
-        <path className="ico-line" d="M12 3.5V13M9.5 3.5h5M12 13c-1.7 0-3 2-3 4.5S10.3 22 12 22s3-2 3-4.5-1.3-4.5-3-4.5z" />
-      </svg>
-    ),
-  },
-  {
-    value: 'cycling',
-    title: 'Cycling & bikepacking',
-    desc: 'Road rash is real — compact and light',
-    icon: (
-      <svg className="option-icon-svg" viewBox="0 0 24 24" aria-hidden="true">
-        <circle className="ico-fill" cx="5.5" cy="16.5" r="1.4" />
-        <circle className="ico-fill" cx="18.5" cy="16.5" r="1.4" />
-        <path className="ico-line" d="M5.5 16.5a4 4 0 1 0 0 .01M18.5 16.5a4 4 0 1 0 0 .01M5.5 16.5 9.5 9h5.2M9.5 9l4.3 7.5M14.7 9l3.8 7.5M13.5 6.8h2.6M8.3 6.8h2.4" />
-      </svg>
-    ),
-  },
-  {
-    value: 'car',
-    title: 'Car kit',
-    desc: 'Lives in the trunk — weight is no object',
-    icon: (
-      <svg className="option-icon-svg" viewBox="0 0 24 24" aria-hidden="true">
-        <path className="ico-fill" d="M7 9.8 5.8 12.5h5.4V9.8z" />
-        <path className="ico-line" d="M3 16.5v-2.7c0-.6.4-1 1-1l1.5-3.4c.3-.7 1-1.1 1.8-1.1h7c.8 0 1.5.4 2 1l2.2 3.5h1.5c.6 0 1 .4 1 1v2.7M3 16.5h3M9 16.5h6M19 16.5h2" />
-        <circle className="ico-line" cx="7.5" cy="16.5" r="1.8" />
-        <circle className="ico-line" cx="17" cy="16.5" r="1.8" />
-      </svg>
-    ),
-  },
+  { value: 'backpacking', title: 'Hiking & backpacking', desc: 'Trail miles on foot — blisters and weight matter', icon: footIcon },
+  { value: 'kayaking', title: 'Kayaking', desc: 'Day paddling — the kit rides in a dry bag', icon: paddleIcon },
+  { value: 'rafting', title: 'Rafting', desc: 'Multi-day on the river — gear straps to the frame', icon: paddleIcon },
+  { value: 'canoeing', title: 'Canoeing', desc: 'Flatwater and rivers — dry bags and portages', icon: paddleIcon },
+  { value: 'road-cycling', title: 'Road cycling', desc: 'Road miles — road rash, compact and light', icon: bikeIcon },
+  { value: 'bikepacking', title: 'Bikepacking', desc: 'Loaded touring — multi-day, self-supported', icon: bikeIcon },
+  { value: 'car', title: 'Car kit', desc: 'Lives in the trunk — weight is no object', icon: carIcon },
 ]
 
 export type DurationBucket = 'day' | '2-3' | '4-7' | 'week-plus'

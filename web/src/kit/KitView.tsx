@@ -112,6 +112,13 @@ export default function KitView(props: {
   const liveRows = sections.flatMap((s) => s.rows).filter((r) => !r.removed)
   const totalWeightOz = liveRows.reduce((sum, r) => sum + r.qty * r.unitWeightOz, 0)
   const totalCents = liveRows.reduce((sum, r) => sum + r.priceCents, 0)
+  // Honest carry: fold the chosen container into the headline — it has real weight/cost.
+  // own-bag / ziplock carry null, so for those the total stays contents-only.
+  const selectedBag = kit.bag.options.find((o) => o.id === bagId)
+  const bagWeightOz = selectedBag?.weightOz ?? 0
+  const bagCents = selectedBag?.priceCents ?? 0
+  const carryWeightOz = totalWeightOz + bagWeightOz
+  const carryCents = totalCents + bagCents
   const packed = liveRows.filter((r) => r.got).length
 
   const addItem = (item: Item) => {
@@ -149,7 +156,8 @@ export default function KitView(props: {
       'Please double-check this first-aid packing list. It was generated for the trip below. ' +
       'Flag anything missing, anything unnecessary, and any quantity that looks wrong.\n\n' +
       'TRIP\n' + props.tripLines.map((l) => `- ${l}`).join('\n') +
-      `\n\nPACKING LIST (${liveRows.length} items · ${oz(totalWeightOz)} · est. ~${usd(totalCents)})\n\n` +
+      `\n\nPACKING LIST (${liveRows.length} items · ${oz(carryWeightOz)} incl. bag · est. ~${usd(carryCents)})\n\n` +
+      (selectedBag ? `Carried in: ${selectedBag.name}${bagWeightOz > 0 ? ` (${oz(bagWeightOz)} · ${usd(bagCents)})` : ' — contents only'}\n\n` : '') +
       sectionBlocks +
       (kit.flags.length ? '\n\nDOCTOR-CONSULT ITEMS (not in the list; prescription conversations)\n' + kit.flags.map((f) => `- ${f.name}: ${f.why}`).join('\n') : '') +
       (kit.nudges.length ? '\n\nPREPARATION NOTES\n' + kit.nudges.map((n) => `- ${n.title}: ${n.desc}`).join('\n') : '') +
@@ -183,8 +191,8 @@ export default function KitView(props: {
         <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 'var(--space-4)' }}>
           <div className="kit-stats">
             <div className="kit-stat"><div className="stat-value">{liveRows.length}</div><div className="stat-label">items</div></div>
-            <div className="kit-stat"><div className="stat-value">{oz(totalWeightOz)}</div><div className="stat-label">total weight</div></div>
-            <div className="kit-stat"><div className="stat-value">~{usd(totalCents)}</div><div className="stat-label">est. cost</div></div>
+            <div className="kit-stat"><div className="stat-value">{oz(carryWeightOz)}</div><div className="stat-label">total weight</div></div>
+            <div className="kit-stat"><div className="stat-value">~{usd(carryCents)}</div><div className="stat-label">est. cost</div></div>
           </div>
           <div className="pack-progress">{packed} of {liveRows.length} packed</div>
           <button className="btn btn-secondary" title="Copy this trip and list as text — paste into an AI, email, or message to verify it" onClick={copyDoubleCheck}>
@@ -194,6 +202,11 @@ export default function KitView(props: {
             ☑ Checklist
           </button>
         </div>
+        {selectedBag && bagWeightOz > 0 && (
+          <p className="text-caption" style={{ marginTop: 'var(--space-2)' }}>
+            Includes the {selectedBag.name.toLowerCase()} ({oz(bagWeightOz)} · {usd(bagCents)}) — contents alone are {oz(totalWeightOz)} · ~{usd(totalCents)}.
+          </p>
+        )}
         {showRetune && (
           <p className="text-caption kit-retune" style={{ marginTop: 'var(--space-3)' }}>
             {props.philosophyLabel} build — an ultralight cut would drop ~{kit.stats.ultralightSavingsOz} oz ·{' '}
