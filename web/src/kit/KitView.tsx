@@ -3,6 +3,7 @@
 // persistence arrives with shareable lists + Postgres.
 
 import { useEffect, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 import type { Category, Item, Kit, KitItem } from '@model/types'
 import AddSearch from './AddSearch'
 import Peek from './Peek'
@@ -369,7 +370,13 @@ function ItemRow(props: {
     >
       <span className="item-check">✓</span>
       <span className="item-name">
-        {r.name}
+        {props.checklist ? (
+          r.name
+        ) : (
+          <Link className="item-name-link" to={`/item/${r.itemId}`} onClick={(e) => e.stopPropagation()}>
+            {r.name}
+          </Link>
+        )}
         {r.chips.map((c) => (
           <span key={c.label} className="chip chip-accent"> {c.label}</span>
         ))}
