@@ -8,7 +8,8 @@ export default function Landing() {
         <div>
           <div className="landing-brand">PHEW!</div>
           <p className="landing-tag" style={{ marginTop: 'var(--space-3)' }}>
-            Most first-aid kits are generic averages, built for no specific trek.
+            Most first-aid kits are generic averages. When things happen, you’re going to want
+            something better.
           </p>
         </div>
 
