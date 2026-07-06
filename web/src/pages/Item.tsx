@@ -122,11 +122,11 @@ export default function Item() {
       <section className="item-block">
         <h2 className="item-block-head">Where to buy</h2>
         <a className="btn btn-primary" href={item.purchaseUrl} target="_blank" rel="noopener noreferrer">
-          Find it at {item.retailer} ↗
+          Find on Amazon ↗
         </a>
         <p className="text-caption text-secondary item-block-note">
-          Placeholder link for now — curated buying options are coming. Price is an estimate; the
-          live price is on the retailer’s page.
+          Opens an Amazon search for this item. Price is an estimate — the live price is on
+          Amazon.
         </p>
       </section>
 

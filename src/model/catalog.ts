@@ -8,7 +8,10 @@
 
 import type { Container, Item } from './types.js'
 
-const buy = (q: string) => `https://www.google.com/search?q=${encodeURIComponent(q)}`
+// v1 buy handoff: an Amazon search on a tuned query — brand-scoped queries land
+// on the specific recommended product, generic ones surface equivalents. No
+// affiliate tag (revenue is not a v1 goal; a `?tag=` is a trivial later add).
+const buy = (q: string) => `https://www.amazon.com/s?k=${encodeURIComponent(q)}`
 
 export const ITEMS: Item[] = [
   // --- Bandages & wound care ---

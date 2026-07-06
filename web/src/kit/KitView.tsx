@@ -393,7 +393,7 @@ function ItemRow(props: {
       <span className="item-qty">{r.unit === 'inch' ? `${r.qty}"` : `×${r.qty}`}</span>
       <span className="item-weight">{oz(r.qty * r.unitWeightOz)}</span>
       <a className="item-buy" href={r.purchaseUrl} target="_blank" rel="noreferrer">
-        {r.retailer} · {usd(r.priceCents)} ↗
+        ~{usd(r.priceCents)} · Amazon ↗
       </a>
       <span className="item-why">{r.application}</span>
       <span className="item-controls">
