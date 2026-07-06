@@ -469,9 +469,9 @@ button { font: inherit; cursor: pointer; }
 .qa.is-active .qa-body { display: block; padding: 0 var(--space-4) var(--space-4); }
 
 .qa-body { display: none; }
-.qa-question { margin-bottom: var(--space-1); }
+.qa-question { margin-bottom: var(--space-1); font-size: var(--text-small); }
 .qa-help { font-size: var(--text-small); color: var(--neutral-600); line-height: var(--leading-snug); margin-bottom: var(--space-4); }
-.qa-options { display: flex; flex-direction: column; gap: var(--space-2); }
+.qa-options { display: flex; flex-direction: column; gap: var(--space-3); }
 .qa-continue { margin-top: var(--space-4); }
 
 /* UPCOMING: dimmed */
@@ -480,15 +480,19 @@ button { font: inherit; cursor: pointer; }
 .qa.is-upcoming .qa-body { display: none; }
 
 /* Compact option style inside the rail (denser than full-page option cards) */
-.qa .option-card { padding: var(--space-3) var(--space-4); border-radius: var(--radius-md); gap: 2px; }
-.qa .option-card .option-title { font-size: var(--text-body); }
-.qa .option-card .option-desc { font-size: var(--text-caption); }
+.qa .option-card { padding: var(--space-3) var(--space-4); border-radius: var(--radius-md); gap: var(--space-1); }
+/* Fully-flat wizard type: all card text one small size; title/question stand
+   out by the display face + weight, not by size. */
+.qa .option-card .option-title { font-size: var(--text-small); }
+.qa .option-card .option-desc { font-size: var(--text-small); }
 .qa .option-row { padding: var(--space-2) var(--space-3); font-size: var(--text-small); }
 .qa .stepper { align-self: flex-start; }
 
 /* Icon option cards (activity): icon left, text right */
 .option-card.has-icon { flex-direction: row; align-items: center; gap: var(--space-3); }
-.option-card.has-icon .option-text { display: flex; flex-direction: column; gap: 2px; }
+/* Title stacks above subtitle with breathing room — for every card, not just
+   icon cards (Q4/Q7/Q8 have no icon and were rendering title+subtitle inline). */
+.option-card .option-text { display: flex; flex-direction: column; gap: var(--space-1); }
 .option-icon-svg { width: 30px; height: 30px; flex: none; }
 .option-icon-svg .ico-line { fill: none; stroke: var(--neutral-800); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
 .option-icon-svg .ico-fill { fill: var(--accent-200); stroke: none; }
@@ -554,9 +558,13 @@ button { font: inherit; cursor: pointer; }
   border: none;
   background: transparent;
   padding: 0 0 2px;
-  width: 100%;
+  flex: 1 1 auto;
+  min-width: 0;
   border-bottom: 2px dashed var(--neutral-300);
 }
+/* Double-check / Checklist sit top-right on the name line (small) */
+.kit-head-actions { display: flex; gap: var(--space-2); flex: none; }
+.btn-sm { padding: 6px var(--space-3); font-size: var(--text-small); }
 .kit-name::placeholder { color: var(--neutral-400); font-weight: 600; }
 .kit-name:hover { border-bottom-color: var(--accent-400); }
 .kit-name:focus { border-bottom-color: var(--accent-500); outline: none; box-shadow: none; }
@@ -602,9 +610,19 @@ button { font: inherit; cursor: pointer; }
 .bag-row .bag-desc { font-size: var(--text-caption); color: var(--neutral-600); }
 .bag-row .bag-meta { font-size: var(--text-small); color: var(--neutral-700); font-variant-numeric: tabular-nums; white-space: nowrap; text-align: right; }
 
-.kit-stats { display: flex; gap: var(--space-8); margin-top: var(--space-5); }
+/* Stats (left) + bag/re-tune caveat (right) share one row */
+.kit-headline {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-6);
+  margin-top: var(--space-5);
+}
+.kit-stats { display: flex; gap: var(--space-8); }
 .kit-stat .stat-value { font-family: var(--font-display); font-size: var(--text-h1); font-weight: 700; font-variant-numeric: tabular-nums; }
 .kit-stat .stat-label { font-size: var(--text-caption); color: var(--neutral-500); }
+.kit-notes { display: flex; flex-direction: column; gap: var(--space-2); text-align: right; max-width: 46ch; }
+.kit-notes p { margin: 0; }
 
 .kit-actions { display: flex; gap: var(--space-2); margin-top: var(--space-5); }
 
@@ -676,6 +694,7 @@ button { font: inherit; cursor: pointer; }
 .kit.is-checklist .bag-meta,
 .kit.is-checklist .kit-name-hint,
 .kit.is-checklist .kit-retune,
+.kit.is-checklist .kit-notes,
 .kit.is-checklist .kit-stats,
 .kit.is-checklist .interest-card,
 .kit.is-checklist .kit-section.is-nonpack { display: none; }
@@ -832,7 +851,7 @@ button { font: inherit; cursor: pointer; }
 }
 .add-pop button:hover { background: var(--accent-50); }
 .add-pop .sugg-app { display: block; font-size: var(--text-caption); color: var(--neutral-500); }
-.kit-item .item-name { font-weight: 500; }
+.kit-item .item-name { font-family: var(--font-display); font-size: var(--text-body); font-weight: 600; letter-spacing: 0.02em; }
 .kit-item .item-qty { font-size: var(--text-small); color: var(--neutral-700); font-variant-numeric: tabular-nums; white-space: nowrap; text-align: right; }
 .kit-item .item-weight { font-size: var(--text-small); color: var(--neutral-500); font-variant-numeric: tabular-nums; text-align: right; }
 .kit-item .item-why { grid-column: 1; font-size: var(--text-caption); color: var(--neutral-500); line-height: var(--leading-snug); }
@@ -996,7 +1015,7 @@ button { font: inherit; cursor: pointer; }
 .item-photo-pending { font-size: var(--text-caption); color: var(--neutral-400); letter-spacing: 0.04em; }
 .item-body { display: flex; flex-direction: column; gap: var(--space-3); }
 .item-eyebrow { font-size: var(--text-caption); letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent-800); }
-.item-name { font-family: var(--font-display); font-size: var(--text-h1); font-weight: 600; line-height: 1.1; }
+.item-page .item-name { font-family: var(--font-display); font-size: var(--text-h1); font-weight: 600; line-height: 1.1; }
 .item-application { color: var(--neutral-700); line-height: var(--leading-snug); }
 .item-meta { display: flex; gap: var(--space-6); margin: var(--space-2) 0; padding: 0; }
 .item-meta dt { font-size: var(--text-caption); color: var(--neutral-500); }
@@ -1018,4 +1037,8 @@ button { font: inherit; cursor: pointer; }
 @media (max-width: 560px) {
   .item-detail { grid-template-columns: 1fr; }
   .item-photo { max-width: 200px; }
+  /* Kit header stacks: actions drop below the name; notes drop below the stats */
+  .kit-name-row { flex-wrap: wrap; }
+  .kit-headline { flex-direction: column; }
+  .kit-notes { text-align: left; max-width: none; }
 }

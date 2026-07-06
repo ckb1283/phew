@@ -187,33 +187,39 @@ export default function KitView(props: {
               <path d="M17 3l4 4L8 20l-5 1 1-5L17 3z" />
             </svg>
           </button>
+          <div className="kit-head-actions">
+            <button className="btn btn-secondary btn-sm" title="Copy this trip and list as text — paste into an AI, email, or message to verify it" onClick={copyDoubleCheck}>
+              {checkCopied ? 'Copied ✓' : '⧉ Double-check'}
+            </button>
+            <button className={`btn btn-secondary btn-sm btn-toggle${checklist ? ' is-on' : ''}`} onClick={() => setChecklist(!checklist)}>
+              ☑ Checklist
+            </button>
+          </div>
         </div>
         <p className="kit-name-hint">Optional — "Rogue River, June" beats "{kit.defaultName}" when you're looking for it later.</p>
-        <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 'var(--space-4)' }}>
+        <div className="kit-headline">
           <div className="kit-stats">
             <div className="kit-stat"><div className="stat-value">{liveRows.length}</div><div className="stat-label">items</div></div>
             <div className="kit-stat"><div className="stat-value">{oz(carryWeightOz)}</div><div className="stat-label">total weight</div></div>
             <div className="kit-stat"><div className="stat-value">~{usd(carryCents)}</div><div className="stat-label">est. cost</div></div>
           </div>
           <div className="pack-progress">{packed} of {liveRows.length} packed</div>
-          <button className="btn btn-secondary" title="Copy this trip and list as text — paste into an AI, email, or message to verify it" onClick={copyDoubleCheck}>
-            {checkCopied ? 'Copied ✓' : '⧉ Double-check'}
-          </button>
-          <button className={`btn btn-secondary btn-toggle${checklist ? ' is-on' : ''}`} onClick={() => setChecklist(!checklist)}>
-            ☑ Checklist
-          </button>
+          {(( selectedBag && bagWeightOz > 0) || showRetune) && (
+            <div className="kit-notes">
+              {selectedBag && bagWeightOz > 0 && (
+                <p className="text-caption">
+                  Includes the {selectedBag.name.toLowerCase()} ({oz(bagWeightOz)} · {usd(bagCents)}) — contents alone are {oz(totalWeightOz)} · ~{usd(totalCents)}.
+                </p>
+              )}
+              {showRetune && (
+                <p className="text-caption kit-retune">
+                  {props.philosophyLabel} build — an ultralight cut would drop ~{kit.stats.ultralightSavingsOz} oz ·{' '}
+                  <button className="link-btn" onClick={() => props.onRetune!()}>re-tune</button>
+                </p>
+              )}
+            </div>
+          )}
         </div>
-        {selectedBag && bagWeightOz > 0 && (
-          <p className="text-caption" style={{ marginTop: 'var(--space-2)' }}>
-            Includes the {selectedBag.name.toLowerCase()} ({oz(bagWeightOz)} · {usd(bagCents)}) — contents alone are {oz(totalWeightOz)} · ~{usd(totalCents)}.
-          </p>
-        )}
-        {showRetune && (
-          <p className="text-caption kit-retune" style={{ marginTop: 'var(--space-3)' }}>
-            {props.philosophyLabel} build — an ultralight cut would drop ~{kit.stats.ultralightSavingsOz} oz ·{' '}
-            <button className="link-btn" onClick={() => props.onRetune!()}>re-tune</button>
-          </p>
-        )}
       </header>
 
       {/* Bag selection */}

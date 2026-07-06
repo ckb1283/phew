@@ -19,10 +19,21 @@ const footIcon = (
     <path className="ico-line" d="M4 16.5V8c0-.8.7-1.3 1.5-1.3H9l1.6 3.2h4.9c2.6 0 4.6 1.6 5.5 3.8v2.8M4 16.5h17M8 6.7V5.2" />
   </svg>
 )
-const paddleIcon = (
+// Side-view kayak: pointed lens hull + a diagonal double-blade paddle.
+const kayakIcon = (
   <svg className="option-icon-svg" viewBox="0 0 24 24" aria-hidden="true">
-    <ellipse className="ico-fill" cx="12" cy="17.5" rx="3" ry="4.5" />
-    <path className="ico-line" d="M12 3.5V13M9.5 3.5h5M12 13c-1.7 0-3 2-3 4.5S10.3 22 12 22s3-2 3-4.5-1.3-4.5-3-4.5z" />
+    <path className="ico-fill" d="M2 15c4.5-2.8 15.5-2.8 20 0-4.5 2.8-15.5 2.8-20 0z" />
+    <path className="ico-line" d="M2 15c4.5-2.8 15.5-2.8 20 0-4.5 2.8-15.5 2.8-20 0zM10.5 13.7h3" />
+    <path className="ico-line" d="M6.5 7.2 17.5 13.4M4.9 6.3l3 1.7M16 12.5l3 1.7" />
+  </svg>
+)
+// Raft, deliberately distinct from a kayak: rounded inflatable tubes (top-down)
+// with two cross-thwarts.
+const raftIcon = (
+  <svg className="option-icon-svg" viewBox="0 0 24 24" aria-hidden="true">
+    <rect className="ico-fill" x="3.5" y="7" width="17" height="10" rx="4.5" />
+    <rect className="ico-line" x="3.5" y="7" width="17" height="10" rx="4.5" />
+    <path className="ico-line" d="M9 7.5v9M15 7.5v9" />
   </svg>
 )
 const bikeIcon = (
@@ -43,8 +54,8 @@ const carIcon = (
 
 export const ACTIVITY_OPTIONS: CardOption<Activity>[] = [
   { value: 'backpacking', title: 'Backpacking', icon: footIcon },
-  { value: 'kayaking', title: 'Kayaking', icon: paddleIcon },
-  { value: 'rafting', title: 'Rafting', icon: paddleIcon },
+  { value: 'kayaking', title: 'Kayaking', icon: kayakIcon },
+  { value: 'rafting', title: 'Rafting', icon: raftIcon },
   { value: 'cycle-touring', title: 'Cycle touring', icon: bikeIcon },
   { value: 'car', title: 'Car kit', icon: carIcon },
 ]
