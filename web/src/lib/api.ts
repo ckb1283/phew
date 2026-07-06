@@ -1,4 +1,4 @@
-import type { Condition, Item, Kit, WizardAnswers } from '@model/types'
+import type { Condition, Item, ItemContent, Kit, WizardAnswers } from '@model/types'
 
 // The wire shape for POST /api/kit: conditions travel as an array or the
 // literal "unsure" (see server validate.ts), not the internal tagged union.
@@ -16,11 +16,22 @@ export async function fetchKit(answers: WireAnswers): Promise<Kit> {
   return res.json()
 }
 
-// The full item catalog (also powers add-search). Item pages fetch this and
-// find by id — the catalog is small enough that a dedicated endpoint isn't worth it.
+// The full item catalog (also powers add-search).
 export async function fetchCatalog(): Promise<Item[]> {
   const res = await fetch('/api/catalog')
   if (!res.ok) throw new Error(`catalog request failed (${res.status})`)
   const data = (await res.json()) as { items: Item[] }
   return data.items
+}
+
+// One item + its editorial content for the detail page. null means the id is
+// unknown (a real 404), distinct from a thrown network error — the page shows a
+// "not in the catalog" state for null and keeps loading/erroring separate.
+export type ItemDetail = { item: Item; content: ItemContent | null }
+
+export async function fetchItem(id: string): Promise<ItemDetail | null> {
+  const res = await fetch(`/api/item/${encodeURIComponent(id)}`)
+  if (res.status === 404) return null
+  if (!res.ok) throw new Error(`item request failed (${res.status})`)
+  return res.json()
 }

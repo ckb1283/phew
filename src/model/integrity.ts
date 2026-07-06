@@ -3,6 +3,7 @@
 // never a runtime 500 waiting for the first user whose answers fire the rule.
 
 import { CONTAINER_BY_ID, CONTAINERS, ITEM_BY_ID, ITEMS } from './catalog.js'
+import { ITEM_CONTENT } from './itemContent.js'
 import { BAG_RULES, FLAG_RULES, KIT_RULES, NUDGE_RULES, SECTIONS } from './rules.js'
 import { ACTIVITIES, PHILOSOPHIES, type Qty } from './types.js'
 
@@ -60,6 +61,12 @@ export function validateModel(): void {
         errors.push(`bag rule ${activity}: preselect for ${phil} (${rule.preselect[phil]}) not in optionIds`)
       }
     }
+  }
+
+  // Every editorial-content key maps to a real item (a typo'd key would render
+  // no page, silently — catch it at boot instead)
+  for (const id of Object.keys(ITEM_CONTENT)) {
+    if (!ITEM_BY_ID.has(id)) errors.push(`ITEM_CONTENT references unknown item: ${id}`)
   }
 
   // Section order values unique (ties would make section order ambiguous)

@@ -4,6 +4,7 @@ import { Hono } from 'hono'
 import { buildKit } from './engine.js'
 import { ITEMS } from './model/catalog.js'
 import { validateModel } from './model/integrity.js'
+import { ITEM_CONTENT } from './model/itemContent.js'
 import { parseWizardAnswers } from './validate.js'
 
 // Content typos fail the deploy, not the user's request. Railway keeps the
@@ -33,6 +34,15 @@ app.post('/api/kit', async (c) => {
 // The item catalog — powers the results screen's add-item search
 // (name + application text are the search index; category routes placement)
 app.get('/api/catalog', (c) => c.json({ items: ITEMS }))
+
+// One item + its editorial content, for the /item/:id detail page. content is
+// null when the item has no authored entry yet — the page renders fewer blocks.
+app.get('/api/item/:id', (c) => {
+  const id = c.req.param('id')
+  const item = ITEMS.find((i) => i.id === id)
+  if (!item) return c.json({ error: 'item not found' }, 404)
+  return c.json({ item, content: ITEM_CONTENT[id] ?? null })
+})
 
 // --- The React app (built by `vite build` into dist/public) -----------------
 // Order matters, and this arrangement can't shadow the API: registered routes

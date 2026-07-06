@@ -1001,9 +1001,20 @@ button { font: inherit; cursor: pointer; }
 .item-meta { display: flex; gap: var(--space-6); margin: var(--space-2) 0; padding: 0; }
 .item-meta dt { font-size: var(--text-caption); color: var(--neutral-500); }
 .item-meta dd { margin: 2px 0 0; font-weight: 500; }
-.item-buy { margin-top: var(--space-3); display: flex; flex-direction: column; gap: var(--space-2); align-items: flex-start; }
-.item-buy-head { font-size: var(--text-body); font-weight: 600; margin: 0; }
-.item-buy-note { margin: 0; }
+/* Content blocks below the header (overview, substitutes, field notes, buy, video) */
+.item-block {
+  margin-top: var(--space-7); padding-top: var(--space-6);
+  border-top: 1px solid var(--neutral-200);
+  display: flex; flex-direction: column; gap: var(--space-3); align-items: flex-start;
+}
+.item-block-head {
+  font-family: var(--font-display); font-size: var(--text-h3); font-weight: 600; margin: 0;
+}
+.item-block-body { color: var(--neutral-800); line-height: var(--leading-normal); max-width: 60ch; margin: 0; }
+.item-block-lead { margin: 0; line-height: var(--leading-snug); max-width: 60ch; }
+.item-block-note { margin: 0; max-width: 60ch; }
+.item-list { margin: 0; padding-left: var(--space-5); display: flex; flex-direction: column; gap: var(--space-2); max-width: 62ch; }
+.item-list li { color: var(--neutral-800); line-height: var(--leading-snug); }
 @media (max-width: 560px) {
   .item-detail { grid-template-columns: 1fr; }
   .item-photo { max-width: 200px; }

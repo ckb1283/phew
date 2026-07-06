@@ -102,6 +102,18 @@ export interface Item {
   imageAlt: string | null
 }
 
+// Editorial per-item content for the /item/:id detail page. SEPARATE from the
+// engine-critical Item fields above: this is vetted prose that changes on a
+// different cadence, is sparse by design (a Partial map — no coverage renders
+// no block), and never rides the /api/kit payload. Every field is optional; a
+// thinly-covered item simply shows fewer blocks.
+export interface ItemContent {
+  overview?: string // 2–3 sentences: what it is + when you reach for it
+  substitutes?: string[] // field alternatives / what to improvise if you cut it
+  quantityNote?: string // how much to carry, how it scales
+  expiryNote?: string // shelf-life & storage — meds and perishables only
+}
+
 export interface Container {
   id: string
   name: string

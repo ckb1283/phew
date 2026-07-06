@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import type { Item as ItemType } from '@model/types'
-import { fetchCatalog } from '../lib/api'
+import { fetchItem, type ItemDetail } from '../lib/api'
 
 const CATEGORY_LABEL: Record<string, string> = {
   bandages: 'Bandages & wound care',
@@ -13,22 +12,23 @@ const CATEGORY_LABEL: Record<string, string> = {
 
 const usd = (cents: number) => `~$${Math.round(cents / 100)}`
 
-// undefined = loading, null = not found, Item = loaded
+// undefined = loading, null = not found, ItemDetail = loaded
 export default function Item() {
   const { id } = useParams<{ id: string }>()
-  const [item, setItem] = useState<ItemType | null | undefined>(undefined)
+  const [data, setData] = useState<ItemDetail | null | undefined>(undefined)
 
   useEffect(() => {
     let live = true
-    fetchCatalog()
-      .then((items) => live && setItem(items.find((i) => i.id === id) ?? null))
-      .catch(() => live && setItem(null))
+    if (!id) return
+    fetchItem(id)
+      .then((d) => live && setData(d))
+      .catch(() => live && setData(null))
     return () => {
       live = false
     }
   }, [id])
 
-  if (item === undefined) {
+  if (data === undefined) {
     return (
       <main className="item-page">
         <p className="text-secondary">Loading…</p>
@@ -36,7 +36,7 @@ export default function Item() {
     )
   }
 
-  if (item === null) {
+  if (data === null) {
     return (
       <main className="item-page">
         <p className="text-secondary">That item isn’t in the catalog.</p>
@@ -46,6 +46,8 @@ export default function Item() {
       </main>
     )
   }
+
+  const { item, content } = data
 
   return (
     <main className="item-page">
@@ -81,18 +83,60 @@ export default function Item() {
               <dd>{usd(item.priceCents)}</dd>
             </div>
           </dl>
-
-          <section className="item-buy">
-            <h2 className="item-buy-head">Where to buy</h2>
-            <a className="btn btn-primary" href={item.purchaseUrl} target="_blank" rel="noopener noreferrer">
-              Find it at {item.retailer} ↗
-            </a>
-            <p className="text-caption text-secondary item-buy-note">
-              Price is an estimate — the live price is on the retailer’s page.
-            </p>
-          </section>
         </div>
       </article>
+
+      {content?.overview && (
+        <section className="item-block">
+          <h2 className="item-block-head">What it is & when to use it</h2>
+          <p className="item-block-body">{content.overview}</p>
+        </section>
+      )}
+
+      {content?.substitutes && content.substitutes.length > 0 && (
+        <section className="item-block">
+          <h2 className="item-block-head">Substitutes & improvisables</h2>
+          <p className="item-block-lead text-secondary">
+            No “right” product — here’s what works if you’re cutting weight or don’t have it:
+          </p>
+          <ul className="item-list">
+            {content.substitutes.map((s) => (
+              <li key={s}>{s}</li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {(content?.quantityNote || content?.expiryNote) && (
+        <section className="item-block">
+          <h2 className="item-block-head">How much & how long</h2>
+          {content.quantityNote && <p className="item-block-body">{content.quantityNote}</p>}
+          {content.expiryNote && (
+            <p className="item-block-body">
+              <strong>Shelf life:</strong> {content.expiryNote}
+            </p>
+          )}
+        </section>
+      )}
+
+      <section className="item-block">
+        <h2 className="item-block-head">Where to buy</h2>
+        <a className="btn btn-primary" href={item.purchaseUrl} target="_blank" rel="noopener noreferrer">
+          Find it at {item.retailer} ↗
+        </a>
+        <p className="text-caption text-secondary item-block-note">
+          Placeholder link for now — curated buying options are coming. Price is an estimate; the
+          live price is on the retailer’s page.
+        </p>
+      </section>
+
+      <section className="item-block">
+        <h2 className="item-block-head">How to use it</h2>
+        <p className="text-caption text-secondary item-block-note">
+          A vetted how-to video will live here. We link technique out to trusted sources rather than
+          writing medical instructions ourselves.
+        </p>
+      </section>
     </main>
   )
 }
