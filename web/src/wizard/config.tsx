@@ -11,49 +11,69 @@ export interface CardOption<V extends string> {
   icon?: ReactNode
 }
 
-// Icon glyphs, factored so activities in a family can share one (water → paddle,
-// wheel → bike). Visual refinement is a later design pass.
-const footIcon = (
-  <svg className="option-icon-svg" viewBox="0 0 24 24" aria-hidden="true">
-    <path className="ico-fill" d="M3 16.5h18V19H3z" />
-    <path className="ico-line" d="M4 16.5V8c0-.8.7-1.3 1.5-1.3H9l1.6 3.2h4.9c2.6 0 4.6 1.6 5.5 3.8v2.8M4 16.5h17M8 6.7V5.2" />
+// Activity glyphs. Four are Tabler Icons (MIT, no attribution) — one sharp
+// stroke family: 24px, fill:none, stroke:currentColor, stroke-width 2, round
+// caps/joins. Rafting has no line-icon match in any open set, so it's a custom
+// glyph drawn to the same Tabler spec (a pill-tube raft with thwarts on a
+// waterline) so it reads native to the set. Color/selected-state via CSS.
+const svgProps = {
+  className: 'option-icon-svg',
+  viewBox: '0 0 24 24',
+  fill: 'none',
+  stroke: 'currentColor',
+  strokeWidth: 2,
+  strokeLinecap: 'round' as const,
+  strokeLinejoin: 'round' as const,
+  'aria-hidden': true,
+}
+// Tabler `backpack`
+const backpackIcon = (
+  <svg {...svgProps}>
+    <path d="M5 18v-6a6 6 0 0 1 6 -6h2a6 6 0 0 1 6 6v6a3 3 0 0 1 -3 3h-8a3 3 0 0 1 -3 -3" />
+    <path d="M10 6v-1a2 2 0 1 1 4 0v1" />
+    <path d="M9 21v-4a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v4" />
+    <path d="M11 10h2" />
   </svg>
 )
-// Side-view kayak: pointed lens hull + a diagonal double-blade paddle.
+// Tabler `kayak`
 const kayakIcon = (
-  <svg className="option-icon-svg" viewBox="0 0 24 24" aria-hidden="true">
-    <path className="ico-fill" d="M2 15c4.5-2.8 15.5-2.8 20 0-4.5 2.8-15.5 2.8-20 0z" />
-    <path className="ico-line" d="M2 15c4.5-2.8 15.5-2.8 20 0-4.5 2.8-15.5 2.8-20 0zM10.5 13.7h3" />
-    <path className="ico-line" d="M6.5 7.2 17.5 13.4M4.9 6.3l3 1.7M16 12.5l3 1.7" />
+  <svg {...svgProps}>
+    <path d="M6.414 6.414a2 2 0 0 0 0 -2.828l-1.414 -1.414l-2.828 2.828l1.414 1.414a2 2 0 0 0 2.828 0" />
+    <path d="M17.586 17.586a2 2 0 0 0 0 2.828l1.414 1.414l2.828 -2.828l-1.414 -1.414a2 2 0 0 0 -2.828 0" />
+    <path d="M6.5 6.5l11 11" />
+    <path d="M22 2.5c-9.983 2.601 -17.627 7.952 -20 19.5c9.983 -2.601 17.627 -7.952 20 -19.5" />
+    <path d="M6.5 12.5l5 5" />
+    <path d="M12.5 6.5l5 5" />
   </svg>
 )
-// Raft, deliberately distinct from a kayak: rounded inflatable tubes (top-down)
-// with two cross-thwarts.
+// Custom raft in Tabler spec: pill-tube hull + two thwarts, on a waterline
 const raftIcon = (
-  <svg className="option-icon-svg" viewBox="0 0 24 24" aria-hidden="true">
-    <rect className="ico-fill" x="3.5" y="7" width="17" height="10" rx="4.5" />
-    <rect className="ico-line" x="3.5" y="7" width="17" height="10" rx="4.5" />
-    <path className="ico-line" d="M9 7.5v9M15 7.5v9" />
+  <svg {...svgProps}>
+    <path d="M7 7h10a4 4 0 0 1 0 8h-10a4 4 0 0 1 0 -8z" />
+    <path d="M9.5 8v6M14.5 8v6" />
+    <path d="M3 19a2 2 0 0 0 2 1a2 2 0 0 0 2 -1a2 2 0 0 1 2 -1a2 2 0 0 1 2 1a2 2 0 0 0 2 1a2 2 0 0 0 2 -1a2 2 0 0 1 2 -1a2 2 0 0 1 2 1" />
   </svg>
 )
+// Tabler `bike`
 const bikeIcon = (
-  <svg className="option-icon-svg" viewBox="0 0 24 24" aria-hidden="true">
-    <circle className="ico-fill" cx="5.5" cy="16.5" r="1.4" />
-    <circle className="ico-fill" cx="18.5" cy="16.5" r="1.4" />
-    <path className="ico-line" d="M5.5 16.5a4 4 0 1 0 0 .01M18.5 16.5a4 4 0 1 0 0 .01M5.5 16.5 9.5 9h5.2M9.5 9l4.3 7.5M14.7 9l3.8 7.5M13.5 6.8h2.6M8.3 6.8h2.4" />
+  <svg {...svgProps}>
+    <path d="M2 18a3 3 0 1 0 6 0a3 3 0 0 0 -6 0" />
+    <path d="M16 18a3 3 0 1 0 6 0a3 3 0 0 0 -6 0" />
+    <path d="M12 19v-4l-3 -3l5 -4l2 3h3" />
+    <path d="M13.007 5a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
   </svg>
 )
+// Tabler `car`
 const carIcon = (
-  <svg className="option-icon-svg" viewBox="0 0 24 24" aria-hidden="true">
-    <path className="ico-fill" d="M7 9.8 5.8 12.5h5.4V9.8z" />
-    <path className="ico-line" d="M3 16.5v-2.7c0-.6.4-1 1-1l1.5-3.4c.3-.7 1-1.1 1.8-1.1h7c.8 0 1.5.4 2 1l2.2 3.5h1.5c.6 0 1 .4 1 1v2.7M3 16.5h3M9 16.5h6M19 16.5h2" />
-    <circle className="ico-line" cx="7.5" cy="16.5" r="1.8" />
-    <circle className="ico-line" cx="17" cy="16.5" r="1.8" />
+  <svg {...svgProps}>
+    <path d="M5 17a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
+    <path d="M15 17a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
+    <path d="M5 17h-2v-6l2 -5h9l4 5h1a2 2 0 0 1 2 2v4h-2m-4 0h-6m-6 -6h15m-6 0v-5" />
   </svg>
 )
 
 export const ACTIVITY_OPTIONS: CardOption<Activity>[] = [
-  { value: 'backpacking', title: 'Backpacking', icon: footIcon },
+  { value: 'backpacking', title: 'Backpacking', icon: backpackIcon },
   { value: 'kayaking', title: 'Kayaking', icon: kayakIcon },
   { value: 'rafting', title: 'Rafting', icon: raftIcon },
   { value: 'cycle-touring', title: 'Cycle touring', icon: bikeIcon },

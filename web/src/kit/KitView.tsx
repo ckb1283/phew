@@ -169,8 +169,6 @@ export default function KitView(props: {
     })
   }
 
-  const showRetune = props.onRetune && kit.stats.ultralightSavingsOz !== null && kit.stats.ultralightSavingsOz > 0
-
   return (
     <div className={`kit${checklist ? ' is-checklist' : ''}`}>
       <header className="kit-header">
@@ -204,21 +202,6 @@ export default function KitView(props: {
             <div className="kit-stat"><div className="stat-value">~{usd(carryCents)}</div><div className="stat-label">est. cost</div></div>
           </div>
           <div className="pack-progress">{packed} of {liveRows.length} packed</div>
-          {(( selectedBag && bagWeightOz > 0) || showRetune) && (
-            <div className="kit-notes">
-              {selectedBag && bagWeightOz > 0 && (
-                <p className="text-caption">
-                  Includes the {selectedBag.name.toLowerCase()} ({oz(bagWeightOz)} · {usd(bagCents)}) — contents alone are {oz(totalWeightOz)} · ~{usd(totalCents)}.
-                </p>
-              )}
-              {showRetune && (
-                <p className="text-caption kit-retune">
-                  {props.philosophyLabel} build — an ultralight cut would drop ~{kit.stats.ultralightSavingsOz} oz ·{' '}
-                  <button className="link-btn" onClick={() => props.onRetune!()}>re-tune</button>
-                </p>
-              )}
-            </div>
-          )}
         </div>
       </header>
 
